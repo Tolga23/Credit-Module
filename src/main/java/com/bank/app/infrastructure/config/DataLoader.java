@@ -2,7 +2,7 @@ package com.bank.app.infrastructure.config;
 
 import com.bank.app.domain.model.user.User;
 import com.bank.app.domain.model.user.UserRole;
-import com.bank.app.infrastructure.persistence.repository.JpaUserRepository;
+import com.bank.app.infrastructure.persistence.repository.JpaUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class DataLoader implements CommandLineRunner {
-    private final JpaUserRepository userRepository;
+    private final JpaUserPort userRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Override

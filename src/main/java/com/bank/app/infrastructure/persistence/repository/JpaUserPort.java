@@ -1,19 +1,19 @@
 package com.bank.app.infrastructure.persistence.repository;
 
 import com.bank.app.domain.model.user.User;
-import com.bank.app.domain.repository.UserRepository;
+import com.bank.app.domain.port.UserPort;
 import com.bank.app.infrastructure.persistence.mapper.UserEntityMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public class JpaUserRepository implements UserRepository {
+public class JpaUserPort implements UserPort {
 
     private final SpringDataUserRepository repository;
     private final UserEntityMapper mapper;
 
-    public JpaUserRepository(SpringDataUserRepository repository, UserEntityMapper mapper) {
+    public JpaUserPort(SpringDataUserRepository repository, UserEntityMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
