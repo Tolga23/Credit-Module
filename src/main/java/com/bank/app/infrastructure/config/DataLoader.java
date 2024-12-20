@@ -1,4 +1,4 @@
-package com.bank.app.infrastructure.init;
+package com.bank.app.infrastructure.config;
 
 import com.bank.app.domain.model.user.User;
 import com.bank.app.domain.model.user.UserRole;
