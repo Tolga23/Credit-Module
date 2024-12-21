@@ -16,7 +16,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class LoanDomainService {
 
-    public void validateCustomerCredit(Customer customer, BigDecimal loanAmount) {
+    public void validateAndUpdateCustomerCredit(Customer customer, BigDecimal loanAmount) {
         if (!customer.checkCreditLimit(loanAmount))
             throw new InsufficientCreditException(loanAmount, customer.getAvailableCreditLimit());
 
@@ -32,7 +32,7 @@ public class LoanDomainService {
             LoanInstallment installment = LoanInstallment.builder()
                     .loanId(loan.getId())
                     .amount(installmentAmount)
-                    .dueDate(firstDueDate.withDayOfMonth(1).plusMonths(i))
+                    .dueDate(firstDueDate.plusMonths(i))
                     .build();
 
             installment.validateInstallment();

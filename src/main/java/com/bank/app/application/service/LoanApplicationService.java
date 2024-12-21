@@ -24,10 +24,25 @@ public class LoanApplicationService {
 
     @Transactional
     public Loan createLoan(CreateLoanCommand request) {
-        // Get customer
-        Customer customer = customerPort.findById(request.customerId())
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+        Customer customer = validateAndGetCustomer(request);
 
+        Loan loan = initializeLoan(request, customer);
+
+        // Save loan
+        Loan savedLoan = loanPort.save(loan);
+        savedLoan.setInterestRate(request.interestRate());
+
+        createAndSaveInstallments(savedLoan);
+
+        return savedLoan;
+    }
+
+    private Customer validateAndGetCustomer(CreateLoanCommand request) {
+        return customerPort.findById(request.customerId())
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+    }
+
+    private Loan initializeLoan(CreateLoanCommand request, Customer customer) {
         // Create new loan
         Loan loan = Loan.createNewLoan(
                 request.customerId(),
@@ -37,20 +52,17 @@ public class LoanApplicationService {
         );
 
         // Validate customer
-        loanDomainService.validateCustomerCredit(customer, loan.getTotalLoanAmount());
+        loanDomainService.validateAndUpdateCustomerCredit(customer, loan.getTotalLoanAmount());
         customerPort.update(customer);
+        return loan;
+    }
 
-        // Save loan
-        Loan savedLoan = loanPort.save(loan);
-        savedLoan.setInterestRate(request.interestRate());
-
+    private void createAndSaveInstallments(Loan savedLoan) {
         // Create and save installments
         List<LoanInstallment> installments = loanDomainService.createInstallment(savedLoan);
         installments.forEach(installment -> {
             LoanInstallment savedInstallment = loanInstallmentPort.save(installment);
             savedLoan.addInstallments(savedInstallment);
         });
-
-        return savedLoan;
     }
 }
