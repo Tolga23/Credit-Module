@@ -1,19 +1,20 @@
-package com.bank.app.infrastructure.adapters.user.repository;
+package com.bank.app.infrastructure.adapters.user;
 
 import com.bank.app.domain.model.user.User;
 import com.bank.app.domain.port.UserPort;
 import com.bank.app.infrastructure.adapters.user.mapper.UserEntityMapper;
-import org.springframework.stereotype.Repository;
+import com.bank.app.infrastructure.adapters.user.repository.UserJpaRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Repository
-public class JpaUserPort implements UserPort {
+@Service
+public class UserDataAdapter implements UserPort {
 
-    private final SpringDataUserRepository repository;
+    private final UserJpaRepository repository;
     private final UserEntityMapper mapper;
 
-    public JpaUserPort(SpringDataUserRepository repository, UserEntityMapper mapper) {
+    public UserDataAdapter(UserJpaRepository repository, UserEntityMapper mapper) {
         this.repository = repository;
         this.mapper = mapper;
     }
