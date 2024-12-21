@@ -34,7 +34,7 @@ public class Loan {
     @Builder.Default
     private List<LoanInstallment> installments = new ArrayList<>();
 
-    public Loan createNewLoan(Long customerId, BigDecimal amount, Integer numberOfInstallment) {
+    public static Loan createNewLoan(Long customerId, BigDecimal amount, Integer numberOfInstallment, BigDecimal interestRate) {
         Loan loan = Loan.builder()
                 .customerId(customerId)
                 .loanAmount(amount)
