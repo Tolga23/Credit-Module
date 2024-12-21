@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -33,19 +34,32 @@ public class Loan {
     @Builder.Default
     private List<LoanInstallment> installments = new ArrayList<>();
 
-    public void addInstallments(LoanInstallment installment){
+    public Loan createNewLoan(Long customerId, BigDecimal amount, Integer numberOfInstallment) {
+        Loan loan = Loan.builder()
+                .customerId(customerId)
+                .loanAmount(amount)
+                .numberOfInstallment(numberOfInstallment)
+                .interestRate(interestRate)
+                .createdDate(LocalDateTime.now())
+                .build();
+
+        loan.validateLoan();
+        return loan;
+    }
+
+    public void addInstallments(LoanInstallment installment) {
         installments.add(installment);
     }
 
-    public void removeInstallments(LoanInstallment installment){
-        installments.remove(installment);
+    public List<LoanInstallment> getInstallments() {
+        return Collections.unmodifiableList(installments);
     }
 
     public BigDecimal getTotalLoanAmount() {
         return loanAmount.multiply(BigDecimal.ONE.add(interestRate));
     }
 
-    public BigDecimal getInstallmentAmount(){
+    public BigDecimal getInstallmentAmount() {
         return getTotalLoanAmount().divide(BigDecimal.valueOf(numberOfInstallment));
     }
 
