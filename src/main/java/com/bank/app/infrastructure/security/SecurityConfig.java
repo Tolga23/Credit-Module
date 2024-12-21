@@ -2,9 +2,12 @@ package com.bank.app.infrastructure.security;
 
 import com.bank.app.infrastructure.security.handler.CustomAccessDeniedHandler;
 import com.bank.app.infrastructure.security.handler.CustomAuthenticationEntryPoint;
+import com.bank.app.infrastructure.security.service.UserDetailsServiceImpl;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -22,10 +25,12 @@ public class SecurityConfig {
 
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final UserDetailsServiceImpl userDetailsServiceImpl;
 
-    public SecurityConfig(CustomAccessDeniedHandler accessDeniedHandler, CustomAuthenticationEntryPoint authenticationEntryPoint) {
+    public SecurityConfig(CustomAccessDeniedHandler accessDeniedHandler, CustomAuthenticationEntryPoint authenticationEntryPoint, UserDetailsServiceImpl userDetailsServiceImpl) {
         this.accessDeniedHandler = accessDeniedHandler;
         this.authenticationEntryPoint = authenticationEntryPoint;
+        this.userDetailsServiceImpl = userDetailsServiceImpl;
     }
 
     @Bean
@@ -51,5 +56,16 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+        AuthenticationManagerBuilder authenticationManagerBuilder =
+                http.getSharedObject(AuthenticationManagerBuilder.class);
+
+        authenticationManagerBuilder.userDetailsService(userDetailsServiceImpl)
+                .passwordEncoder(passwordEncoder());
+
+        return authenticationManagerBuilder.build();
     }
 }
