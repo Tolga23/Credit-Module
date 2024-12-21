@@ -1,6 +1,6 @@
-package com.bank.app.infrastructure.persistence.repository;
+package com.bank.app.infrastructure.adapters.user.repository;
 
-import com.bank.app.infrastructure.persistence.entity.UserEntity;
+import com.bank.app.infrastructure.adapters.user.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

@@ -1,7 +1,7 @@
-package com.bank.app.infrastructure.persistence.mapper;
+package com.bank.app.infrastructure.adapters.user.mapper;
 
 import com.bank.app.domain.model.user.User;
-import com.bank.app.infrastructure.persistence.entity.UserEntity;
+import com.bank.app.infrastructure.adapters.user.entity.UserEntity;
 import org.springframework.stereotype.Component;
 
 @Component

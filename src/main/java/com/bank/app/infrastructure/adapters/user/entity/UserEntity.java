@@ -1,6 +1,7 @@
-package com.bank.app.infrastructure.persistence.entity;
+package com.bank.app.infrastructure.adapters.user.entity;
 
 import com.bank.app.domain.model.user.UserRole;
+import com.bank.app.infrastructure.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

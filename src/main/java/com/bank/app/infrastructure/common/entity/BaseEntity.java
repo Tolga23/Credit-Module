@@ -1,4 +1,4 @@
-package com.bank.app.infrastructure.persistence.entity;
+package com.bank.app.infrastructure.common.entity;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

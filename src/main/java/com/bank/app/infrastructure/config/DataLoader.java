@@ -2,7 +2,7 @@ package com.bank.app.infrastructure.config;
 
 import com.bank.app.domain.model.user.User;
 import com.bank.app.domain.model.user.UserRole;
-import com.bank.app.infrastructure.persistence.repository.JpaUserPort;
+import com.bank.app.infrastructure.adapters.user.repository.JpaUserPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;

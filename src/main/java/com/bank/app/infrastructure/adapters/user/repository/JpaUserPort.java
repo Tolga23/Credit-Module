@@ -1,8 +1,8 @@
-package com.bank.app.infrastructure.persistence.repository;
+package com.bank.app.infrastructure.adapters.user.repository;
 
 import com.bank.app.domain.model.user.User;
 import com.bank.app.domain.port.UserPort;
-import com.bank.app.infrastructure.persistence.mapper.UserEntityMapper;
+import com.bank.app.infrastructure.adapters.user.mapper.UserEntityMapper;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
