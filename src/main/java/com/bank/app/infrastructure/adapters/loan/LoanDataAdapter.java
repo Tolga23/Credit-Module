@@ -40,6 +40,13 @@ public class LoanDataAdapter implements LoanPort {
     }
 
     @Override
+    public List<Loan> findByCustomerIdAndFilters(Long customerId, Integer numberOfInstallments, Boolean isPaid) {
+        return repository.findByCustomerIdAndFilters(customerId, numberOfInstallments, isPaid).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public void update(Loan loan) {
         repository.save(mapper.toEntity(loan));
     }

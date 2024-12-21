@@ -65,4 +65,12 @@ public class LoanApplicationService {
             savedLoan.addInstallments(savedInstallment);
         });
     }
+
+    public List<Loan> getCustomerLoans(Long customerId, Integer numberOfInstallments, Boolean isPaid) {
+        // Validate customer exists
+        customerPort.findById(customerId)
+                .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
+
+        return loanPort.findByCustomerIdAndFilters(customerId, numberOfInstallments, isPaid);
+    }
 }
