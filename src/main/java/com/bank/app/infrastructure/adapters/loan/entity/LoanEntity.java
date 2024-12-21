@@ -1,14 +1,14 @@
 package com.bank.app.infrastructure.adapters.loan.entity;
 
 import com.bank.app.infrastructure.common.entity.BaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "loan")
@@ -29,4 +29,7 @@ public class LoanEntity extends BaseEntity {
 
     @Column(name = "is_paid", nullable = false)
     private boolean isPaid;
+
+    @OneToMany(mappedBy = "loan", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LoanInstallmentEntity> installments;
 }

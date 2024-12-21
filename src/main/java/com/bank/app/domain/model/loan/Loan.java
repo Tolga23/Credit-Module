@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -17,6 +19,10 @@ public class Loan {
     private Long customerId;
     private BigDecimal loanAmount;
     private int numberOfInstallment;
-    private LocalDateTime createdDate;
-    private boolean isPaid;
+    @Builder.Default
+    private LocalDateTime createdDate = LocalDateTime.now();
+    @Builder.Default
+    private boolean isPaid = false;
+    @Builder.Default
+    private List<LoanInstallment> installments = new ArrayList<>();
 }
