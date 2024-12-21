@@ -4,6 +4,8 @@ import com.bank.app.domain.model.loan.LoanInstallment;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public record LoanInstallmentResponse(
         Long id,
@@ -26,5 +28,13 @@ public record LoanInstallmentResponse(
                 installment.getPaymentDate(),
                 installment.isPaid()
         );
+    }
+
+    public static List<LoanInstallmentResponse> from(List<LoanInstallment> installment) {
+        if (installment == null) return null;
+
+        return installment.stream()
+                .map(LoanInstallmentResponse::from)
+                .collect(Collectors.toList());
     }
 }
