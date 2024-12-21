@@ -40,7 +40,6 @@ public class Loan {
                 .loanAmount(amount)
                 .numberOfInstallment(numberOfInstallment)
                 .interestRate(interestRate)
-                .createdDate(LocalDateTime.now())
                 .build();
 
         loan.validateLoan();
@@ -73,7 +72,7 @@ public class Loan {
         if (numberOfInstallment == null || !VALID_INSTALLMENTS.contains(numberOfInstallment))
             throw new IllegalArgumentException("Number of installments must be one of: " + VALID_INSTALLMENTS);
 
-        if (interestRate == null || interestRate.compareTo(MAX_INTEREST_RATE) < 0 || interestRate.compareTo(MAX_INTEREST_RATE) > 0)
+        if (interestRate == null || interestRate.compareTo(MIN_INTEREST_RATE) < 0 || interestRate.compareTo(MAX_INTEREST_RATE) > 0)
             throw new IllegalArgumentException("Interest rate must be between  " + MIN_INTEREST_RATE + " and " + MAX_INTEREST_RATE);
     }
 }

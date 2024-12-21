@@ -11,6 +11,7 @@ public class LoanInstallmentEntityMapper {
 
         return LoanInstallment.builder()
                 .id(entity.getId())
+                .loanId(entity.getLoan().getId())
                 .amount(entity.getAmount())
                 .paidAmount(entity.getPaidAmount())
                 .dueDate(entity.getDueDate())

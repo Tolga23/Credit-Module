@@ -7,6 +7,7 @@ import com.bank.app.infrastructure.adapters.loan.mapper.LoanEntityMapper;
 import com.bank.app.infrastructure.adapters.loan.repository.LoanJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +18,12 @@ public class LoanDataAdapter implements LoanPort {
     private final LoanJpaRepository repository;
     private final LoanEntityMapper mapper;
 
+    @Transactional
     @Override
     public Loan save(Loan loan) {
         LoanEntity entity = mapper.toEntity(loan);
-        return mapper.toDomain(repository.save(entity));
+        LoanEntity savedEntity = repository.save(entity);
+        return mapper.toDomain(savedEntity);
     }
 
     @Override
