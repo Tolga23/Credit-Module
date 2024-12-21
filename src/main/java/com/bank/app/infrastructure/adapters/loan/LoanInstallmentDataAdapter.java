@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class JpaLoanInstallmentDataAdapter implements LoanInstallmentPort {
+public class LoanInstallmentDataAdapter implements LoanInstallmentPort {
     private final LoanInstallmentJpaRepository repository;
     private final LoanJpaRepository loanRepository;
     private final LoanInstallmentEntityMapper mapper;
