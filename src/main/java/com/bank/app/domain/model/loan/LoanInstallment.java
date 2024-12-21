@@ -21,4 +21,15 @@ public class LoanInstallment {
     private LocalDate paymentDate;
     @Builder.Default
     private boolean isPaid = false;
+
+    public void validateInstallment(){
+        if (loanId == null)
+            throw new IllegalArgumentException("Load ID is required.");
+
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0)
+            throw new IllegalArgumentException("Amount must be positive");
+
+        if (dueDate == null || dueDate.isBefore(LocalDate.now()))
+            throw new IllegalArgumentException("DueDate cannot be in the past or null.");
+    }
 }

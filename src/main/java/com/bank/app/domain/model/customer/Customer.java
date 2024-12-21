@@ -17,4 +17,12 @@ public class Customer {
     private String surname;
     private BigDecimal creditLimit;
     private BigDecimal usedCreditLimit;
+
+    public BigDecimal getAvailableCreditLimit() {
+        return creditLimit.subtract(usedCreditLimit);
+    }
+
+    public boolean checkCreditLimit(BigDecimal creditLimit) {
+        return getAvailableCreditLimit().compareTo(creditLimit) >= 0;
+    }
 }
