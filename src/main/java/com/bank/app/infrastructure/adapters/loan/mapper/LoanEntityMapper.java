@@ -38,7 +38,6 @@ public class LoanEntityMapper {
         if (domain == null) return null;
 
         LoanEntity entity = new LoanEntity();
-        entity.setId(domain.getId());
         entity.setCustomerId(domain.getCustomerId());
         entity.setLoanAmount(domain.getLoanAmount());
         entity.setNumberOfInstallment(domain.getNumberOfInstallment());

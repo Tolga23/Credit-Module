@@ -3,12 +3,16 @@ package com.bank.app.application.service;
 import com.bank.app.application.command.CreateLoanCommand;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
+import com.bank.app.domain.model.loan.LoanInstallment;
 import com.bank.app.domain.port.CustomerPort;
+import com.bank.app.domain.port.LoanInstallmentPort;
 import com.bank.app.domain.port.LoanPort;
 import com.bank.app.domain.service.LoanDomainService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -16,6 +20,7 @@ public class LoanApplicationService {
     private final LoanPort loanPort;
     private final CustomerPort customerPort;
     private final LoanDomainService loanDomainService;
+    private final LoanInstallmentPort loanInstallmentPort;
 
     @Transactional
     public Loan createLoan(CreateLoanCommand request) {
@@ -35,10 +40,17 @@ public class LoanApplicationService {
         loanDomainService.validateCustomerCredit(customer, loan.getTotalLoanAmount());
         customerPort.update(customer);
 
-        // Create installments
-        loanDomainService.createInstallment(loan)
-                .forEach(loan::addInstallments);
+        // Save loan
+        Loan savedLoan = loanPort.save(loan);
+        savedLoan.setInterestRate(request.interestRate());
 
-        return loanPort.save(loan);
+        // Create and save installments
+        List<LoanInstallment> installments = loanDomainService.createInstallment(savedLoan);
+        installments.forEach(installment -> {
+            LoanInstallment savedInstallment = loanInstallmentPort.save(installment);
+            savedLoan.addInstallments(savedInstallment);
+        });
+
+        return savedLoan;
     }
 }

@@ -19,6 +19,8 @@ public class LoanDomainService {
     public void validateCustomerCredit(Customer customer, BigDecimal loanAmount) {
         if (!customer.checkCreditLimit(loanAmount))
             throw new InsufficientCreditException(loanAmount, customer.getAvailableCreditLimit());
+
+        customer.useCredit(loanAmount);
     }
 
     public List<LoanInstallment> createInstallment(Loan loan) {
@@ -26,11 +28,11 @@ public class LoanDomainService {
         BigDecimal installmentAmount = loan.getInstallmentAmount();
         LocalDate firstDueDate = calculateFirstDueDate();
 
-        for (int i = 0; i < loan.getNumberOfInstallment(); i++) {
+        for (int i = 1; i <= loan.getNumberOfInstallment(); i++) {
             LoanInstallment installment = LoanInstallment.builder()
                     .loanId(loan.getId())
                     .amount(installmentAmount)
-                    .dueDate(firstDueDate.plusMonths(1))
+                    .dueDate(firstDueDate.withDayOfMonth(1).plusMonths(i))
                     .build();
 
             installment.validateInstallment();
@@ -41,8 +43,7 @@ public class LoanDomainService {
     }
 
     private LocalDate calculateFirstDueDate() {
-        return LocalDate.now()
-                .plusMonths(1)
-                .plusDays(1);
+        LocalDate now = LocalDate.now();
+        return now.plusMonths(1).withDayOfMonth(1);
     }
 }
