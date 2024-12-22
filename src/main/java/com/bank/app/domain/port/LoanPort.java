@@ -14,5 +14,5 @@ public interface LoanPort {
 
     List<Loan> findByCustomerIdAndFilters(Long customerId, Integer numberOfInstallments, Boolean isPaid);
 
-    Loan pay(Loan loan);
+    void pay(Loan loan);
 }

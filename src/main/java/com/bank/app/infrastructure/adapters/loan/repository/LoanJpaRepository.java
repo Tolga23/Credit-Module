@@ -11,8 +11,8 @@ public interface LoanJpaRepository extends JpaRepository<LoanEntity, Long> {
     List<LoanEntity> findByCustomerId(Long customerId);
 
     @Query("SELECT l FROM LoanEntity l WHERE l.customerId = :customerId " +
-           "AND (:numberOfInstallments IS NULL OR l.numberOfInstallment = :numberOfInstallments) " +
-           "AND (:isPaid IS NULL OR l.isPaid = :isPaid)")
+            "AND (:numberOfInstallments IS NULL OR l.numberOfInstallment = :numberOfInstallments) " +
+            "AND (:isPaid IS NULL OR l.isPaid = :isPaid)")
     List<LoanEntity> findByCustomerIdAndFilters(
             @Param("customerId") Long customerId,
             @Param("numberOfInstallments") Integer numberOfInstallments,

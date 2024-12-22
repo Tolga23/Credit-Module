@@ -48,7 +48,7 @@ public class LoanDataAdapter implements LoanPort {
 
     @Transactional
     @Override
-    public Loan pay(Loan loan) {
+    public void pay(Loan loan) {
         // Get existing entity with current installments
         LoanEntity existingEntity = repository.findById(loan.getId())
                 .orElseThrow(() -> new IllegalStateException("Loan not found with ID: " + loan.getId()));
@@ -57,6 +57,6 @@ public class LoanDataAdapter implements LoanPort {
 
         LoanEntity savedEntity = repository.save(existingEntity);
 
-        return mapper.toDomain(savedEntity);
+        mapper.toDomain(savedEntity);
     }
 }
