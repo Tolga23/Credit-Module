@@ -1,6 +1,7 @@
 package com.bank.app.application.service;
 
 import com.bank.app.application.command.CreateLoanCommand;
+import com.bank.app.application.command.PayLoanCommand;
 import com.bank.app.application.command.PaymentResult;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
@@ -44,12 +45,12 @@ public class LoanApplicationService {
     }
 
     @Transactional
-    public PayLoanResponse payLoan(Long customerId, Long loanId, BigDecimal amount) {
+    public PayLoanResponse payLoan(Long customerId, PayLoanCommand command) {
         // Fetch and validate loan
-        Loan loan = fetchAndValidateLoan(loanId);
+        Loan loan = fetchAndValidateLoan(command.loanId());
 
         // Process payment
-        PaymentResult result = loanPaymentService.processPayment(loan, amount);
+        PaymentResult result = loanPaymentService.processPayment(loan, command.amount());
 
         // Save changes if payment was successful
         if (result.totalPaid().compareTo(BigDecimal.ZERO) > 0) {

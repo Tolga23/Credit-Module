@@ -4,13 +4,36 @@ import com.bank.app.domain.exception.InsufficientCreditException;
 import com.bank.app.domain.exception.LoanException;
 import com.bank.app.infrastructure.common.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        List<FieldError> fieldErrorList = ex.getBindingResult().getFieldErrors();
+        String fieldMessage = fieldErrorList.stream().map(FieldError::getDefaultMessage).collect(Collectors.joining(", "));
+
+        ErrorResponse error = ErrorResponse.of(
+                fieldMessage,
+                "VALIDATION_ERROR",
+                request.getDescription(false)
+        );
+
+        return new ResponseEntity<>(error, status);
+    }
 
     @ExceptionHandler(InsufficientCreditException.class)
     public ResponseEntity<ErrorResponse> handleInsufficientCreditException(InsufficientCreditException ex, HttpServletRequest request) {
@@ -21,7 +44,6 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
-    
 
     @ExceptionHandler(LoanException.class)
     public ResponseEntity<ErrorResponse> handleLoanException(LoanException ex, HttpServletRequest request) {
