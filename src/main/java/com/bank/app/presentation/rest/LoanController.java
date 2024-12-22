@@ -43,7 +43,7 @@ public class LoanController {
     public ResponseEntity<PayLoanResponse> payLoan(@Valid @RequestBody PayLoanRequest request) {
         PayLoanCommand payLoanCommand = PayLoanCommand.from(request);
         return ResponseEntity.ok(
-                service.payLoan(request.customerId(), payLoanCommand)
+                service.payLoan(payLoanCommand)
         );
     }
 }

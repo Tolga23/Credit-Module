@@ -47,9 +47,9 @@ public class LoanApplicationService {
     }
 
     @Transactional
-    public PayLoanResponse payLoan(Long customerId, PayLoanCommand command) {
+    public PayLoanResponse payLoan(PayLoanCommand command) {
         // Fetch & validate loan and ownership
-        Loan loan = validateLoanAndOwnership(command.loanId(), customerId);
+        Loan loan = validateLoanAndOwnership(command.loanId(), command.customerId());
 
         // Process payment
         PaymentResult result = loanPaymentService.processPayment(loan, command.amount());
@@ -65,7 +65,7 @@ public class LoanApplicationService {
             loanPort.pay(loan);
 
             // Update customer credit
-            updateCustomerCredit(customerId, result.originalAmount());
+            updateCustomerCredit(command.customerId(), result.originalAmount());
         }
 
         return new PayLoanResponse(result.totalPaid(), result.installmentsPaid(), loan.isPaid());
