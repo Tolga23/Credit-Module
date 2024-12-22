@@ -53,15 +53,14 @@ public class LoanInstallment {
         return amount;
     }
 
-    public void processPayment(BigDecimal paymentAmount, LocalDate paymentDate) {
+    public void processPayment(BigDecimal paymentAmount, BigDecimal requiredAmount) {
         if (isPaid) {
             throw new IllegalStateException("Installment is already paid");
         }
 
-        BigDecimal requiredAmount = calculatePaymentAmount(paymentDate);
         if (paymentAmount.compareTo(requiredAmount) >= 0) {
             this.paidAmount = requiredAmount;
-            this.paymentDate = paymentDate;
+            this.paymentDate = LocalDate.now();
             this.isPaid = true;
         } else {
             throw new IllegalArgumentException("Payment amount must be at least " + requiredAmount);

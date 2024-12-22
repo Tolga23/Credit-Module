@@ -21,7 +21,7 @@ public class LoanPaymentService {
         LocalDate paymentDate = LocalDate.now();
         List<LoanInstallment> eligibleInstallments = getEligibleInstallments(loan, paymentDate);
 
-        validatePaymentAmount(eligibleInstallments, amount, paymentDate);
+        validatePaymentAmount(eligibleInstallments.get(0), amount);
         return processInstallmentPayments(eligibleInstallments, amount, paymentDate, loan);
     }
 
@@ -37,7 +37,7 @@ public class LoanPaymentService {
             BigDecimal requiredAmount = installment.calculatePaymentAmount(paymentDate);
 
             if (remainingAmount.compareTo(requiredAmount) >= 0) {
-                installment.processPayment(requiredAmount, paymentDate);
+                installment.processPayment(requiredAmount, requiredAmount);
                 remainingAmount = remainingAmount.subtract(requiredAmount);
                 totalPaid = totalPaid.add(requiredAmount);
                 installmentsPaid++;
@@ -50,12 +50,10 @@ public class LoanPaymentService {
         return new PaymentResult(totalPaid, installmentsPaid);
     }
 
-    private void validatePaymentAmount(List<LoanInstallment> eligibleInstallments, BigDecimal amount, LocalDate paymentDate) {
-        if (!eligibleInstallments.isEmpty()) {
-            BigDecimal firstInstallmentAmount = eligibleInstallments.get(0).calculatePaymentAmount(paymentDate);
-            if (amount.compareTo(firstInstallmentAmount) < 0) {
-                throw new IllegalArgumentException("Payment amount must be at least: " + firstInstallmentAmount);
-            }
+    private void validatePaymentAmount(LoanInstallment firstInstallment, BigDecimal amount) {
+        BigDecimal requiredAmount = firstInstallment.getAmount();
+        if (amount.compareTo(requiredAmount) < 0) {
+            throw new IllegalArgumentException("Payment amount must be at least: " + requiredAmount);
         }
     }
 
