@@ -11,7 +11,7 @@ public record PayLoanRequest(
         @NotNull(message = "Loan id is required")
         Long loanId,
         @NotNull(message = "Payment amount is required")
-        @DecimalMin(value = "0.0", message = "Payment amount must be greater than 0")
+        @DecimalMin(value = "0.0", inclusive = false, message = "Payment amount must be greater than 0")
         BigDecimal amount
 ) {
 }
