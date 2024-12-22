@@ -63,16 +63,18 @@ public class LoanApplicationService {
             loanPort.pay(loan);
 
             // Update customer credit
-            updateCustomerCredit(customerId, result.totalPaid());
+            updateCustomerCredit(customerId, result.originalAmount());
         }
 
         return new PayLoanResponse(result.totalPaid(), result.installmentsPaid(), loan.isPaid());
     }
 
-    private void updateCustomerCredit(Long customerId, BigDecimal paidAmount) {
+    private void updateCustomerCredit(Long customerId, BigDecimal originalAmount) {
         Customer customer = customerPort.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
-        customer.releaseCredit(paidAmount);
+
+        // original amount of added because of the penalty/discount.
+        customer.releaseCredit(originalAmount);
         customerPort.update(customer);
     }
 

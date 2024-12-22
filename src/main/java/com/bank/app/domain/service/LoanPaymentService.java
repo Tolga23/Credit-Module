@@ -31,13 +31,15 @@ public class LoanPaymentService {
                                                      Loan loan) {
         BigDecimal remainingAmount = amount;
         BigDecimal totalPaid = BigDecimal.ZERO;
+        BigDecimal originalAmount = BigDecimal.ZERO;
         int installmentsPaid = 0;
 
         for (LoanInstallment installment : eligibleInstallments) {
             BigDecimal requiredAmount = installment.calculatePaymentAmount(paymentDate);
 
             if (remainingAmount.compareTo(requiredAmount) >= 0) {
-                installment.processPayment(requiredAmount, requiredAmount);
+                originalAmount = originalAmount.add(installment.getAmount());
+                installment.processPayment(remainingAmount, requiredAmount);
                 remainingAmount = remainingAmount.subtract(requiredAmount);
                 totalPaid = totalPaid.add(requiredAmount);
                 installmentsPaid++;
@@ -47,7 +49,7 @@ public class LoanPaymentService {
         }
 
         loan.checkAndUpdatePaidStatus();
-        return new PaymentResult(totalPaid, installmentsPaid);
+        return new PaymentResult(totalPaid, originalAmount, installmentsPaid);
     }
 
     private void validatePaymentAmount(LoanInstallment firstInstallment, BigDecimal amount) {

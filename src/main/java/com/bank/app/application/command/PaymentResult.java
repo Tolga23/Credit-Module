@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 public record PaymentResult(
         BigDecimal totalPaid,
+        BigDecimal originalAmount,
         int installmentsPaid
 ) {
 }
