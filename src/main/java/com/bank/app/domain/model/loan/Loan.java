@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,8 +20,8 @@ import java.util.Set;
 public class Loan {
 
     public static final Set<Integer> VALID_INSTALLMENTS = Set.of(3, 6, 9, 12, 24);
-    public static final BigDecimal MIN_INTEREST_RATE = BigDecimal.valueOf(0.1);
-    public static final BigDecimal MAX_INTEREST_RATE = BigDecimal.valueOf(0.5);
+    public static final BigDecimal MIN_INTEREST_RATE = new BigDecimal("0.1").setScale(2, RoundingMode.HALF_UP);
+    public static final BigDecimal MAX_INTEREST_RATE = new BigDecimal("0.5").setScale(2, RoundingMode.HALF_UP);
     public static final int MAX_PAYMENT_MONTHS = 4;
 
     private Long id;
@@ -40,7 +41,7 @@ public class Loan {
                 .customerId(customerId)
                 .loanAmount(amount)
                 .numberOfInstallment(numberOfInstallment)
-                .interestRate(interestRate)
+                .interestRate(interestRate.setScale(2, RoundingMode.HALF_UP))
                 .build();
 
         loan.validateLoan();
@@ -61,7 +62,7 @@ public class Loan {
     }
 
     public BigDecimal getInstallmentAmount() {
-        return getTotalLoanAmount().divide(BigDecimal.valueOf(numberOfInstallment));
+        return getTotalLoanAmount().divide(BigDecimal.valueOf(numberOfInstallment),2,RoundingMode.HALF_UP);
     }
 
     public BigDecimal getTotalPaidAmount() {
