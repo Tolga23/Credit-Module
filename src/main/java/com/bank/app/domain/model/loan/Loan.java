@@ -18,9 +18,10 @@ import java.util.Set;
 @AllArgsConstructor
 public class Loan {
 
-    public static final Set<Integer> VALID_INSTALLMENTS = Set.of(6, 9, 12, 24);
+    public static final Set<Integer> VALID_INSTALLMENTS = Set.of(3, 6, 9, 12, 24);
     public static final BigDecimal MIN_INTEREST_RATE = BigDecimal.valueOf(0.1);
     public static final BigDecimal MAX_INTEREST_RATE = BigDecimal.valueOf(0.5);
+    public static final int MAX_PAYMENT_MONTHS = 4;
 
     private Long id;
     private Long customerId;
@@ -74,12 +75,12 @@ public class Loan {
         return getTotalLoanAmount().subtract(getTotalPaidAmount());
     }
 
-    private void checkAndUpdatePaidStatus() {
+    public void checkAndUpdatePaidStatus() {
         isPaid = !installments.isEmpty() &&
                 installments.stream().allMatch(LoanInstallment::isPaid);
     }
 
-    public void validateLoan() {
+    private void validateLoan() {
         if (customerId == null)
             throw new IllegalArgumentException("Customer ID is required.");
 

@@ -9,30 +9,30 @@ import com.bank.app.domain.port.CustomerPort;
 import com.bank.app.domain.port.LoanInstallmentPort;
 import com.bank.app.domain.port.LoanPort;
 import com.bank.app.domain.service.LoanDomainService;
+import com.bank.app.domain.service.LoanPaymentService;
 import com.bank.app.presentation.dto.response.PayLoanResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class LoanApplicationService {
-    public static final int MAX_PAYMENT_MONTHS = 3;
     private final LoanPort loanPort;
     private final CustomerPort customerPort;
     private final LoanDomainService loanDomainService;
     private final LoanInstallmentPort loanInstallmentPort;
+    private final LoanPaymentService loanPaymentService;
 
     @Transactional
     public Loan createLoan(CreateLoanCommand request) {
         Customer customer = validateAndGetCustomer(request.customerId());
 
-        Loan loan = initializeLoan(request, customer);
+        Loan loan = initializeLoan(request);
+        validateCustomerCreditLimitAndUpdate(customer, loan);
 
         // Save loan to get id
         Loan savedLoan = loanPort.save(loan);
@@ -45,94 +45,47 @@ public class LoanApplicationService {
 
     @Transactional
     public PayLoanResponse payLoan(Long customerId, Long loanId, BigDecimal amount) {
-        Loan loan = fetchAndValidateLoan(customerId, loanId);
+        // Fetch and validate loan
+        Loan loan = fetchAndValidateLoan(loanId);
 
-        List<LoanInstallment> eligibleInstallments = getEligibleInstallments(loanId);
+        // Process payment
+        PaymentResult result = loanPaymentService.processPayment(loan, amount);
 
-        PaymentResult result = processPayment(amount, eligibleInstallments);
-
-        // Update loan status if any payment was made
+        // Save changes if payment was successful
         if (result.totalPaid().compareTo(BigDecimal.ZERO) > 0) {
-            updateLoanStatus(loanId, loan);
-            updateCustomerCredit(customerId, result);
+            // Update loan installments
+            loan.getInstallments().stream()
+                    .filter(LoanInstallment::isPaid)
+                    .forEach(loanInstallmentPort::update);
+
+            // Update loan status
+            loanPort.pay(loan);
+
+            // Update customer credit
+            updateCustomerCredit(customerId, result.totalPaid());
         }
 
-        // Return payment result
         return new PayLoanResponse(result.totalPaid(), result.installmentsPaid(), loan.isPaid());
     }
 
-    private void updateCustomerCredit(Long customerId, PaymentResult result) {
-        // Update customer credit limit
+    private void updateCustomerCredit(Long customerId, BigDecimal paidAmount) {
         Customer customer = customerPort.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
-        customer.releaseCredit(result.totalPaid());
+        customer.releaseCredit(paidAmount);
         customerPort.update(customer);
     }
 
-    private Loan updateLoanStatus(Long loanId, Loan loan) {
-        // Check if all installments are paid
-        boolean isFullyPaid = loanInstallmentPort.findByLoanId(loanId).stream()
-                .allMatch(LoanInstallment::isPaid);
-
-        loan.setPaid(isFullyPaid);
-        loanPort.pay(loan); // Save the updated loan status
-        return loan;
-    }
-
-    private Loan fetchAndValidateLoan(Long customerId, Long loanId) {
+    private Loan fetchAndValidateLoan(Long loanId) {
         // Fetch and validate loan
         Loan loan = loanPort.findById(loanId)
                 .orElseThrow(() -> new IllegalArgumentException("Loan not found"));
-        validateOwnership(loan, customerId);
+
+        if (loan.isPaid()) {
+            throw new IllegalStateException("Loan is already paid.");
+        }
+
+//        validateOwnership(loan, customerId);
         return loan;
-    }
-
-    private List<LoanInstallment> getEligibleInstallments(Long loanId) {
-        // Get installments eligible for payment
-        List<LoanInstallment> installments = loanInstallmentPort.findByLoanId(loanId).stream()
-                .filter(installment -> !installment.isPaid()) // Only unpaid installments
-                .filter(installment -> installment.getDueDate().isBefore(LocalDate.now().plusMonths(MAX_PAYMENT_MONTHS)))
-                .sorted(Comparator.comparing(LoanInstallment::getDueDate)) // Sort by earliest due date
-                .toList();
-
-        if (installments.isEmpty()) {
-            throw new IllegalStateException("No eligible installments found");
-        }
-        return installments;
-    }
-
-    private PaymentResult processPayment(BigDecimal amount, List<LoanInstallment> installments) {
-        BigDecimal remainingAmount = amount;
-        BigDecimal totalPaid = BigDecimal.ZERO;
-        int installmentsPaid = 0;
-
-        for (LoanInstallment installment : installments) {
-            if (remainingAmount.compareTo(installment.getAmount()) >= 0) {
-                // Full payment
-                installment.setPaid(true);
-                installment.setPaidAmount(installment.getAmount());
-                remainingAmount = remainingAmount.subtract(installment.getAmount());
-                totalPaid = totalPaid.add(installment.getAmount());
-                installmentsPaid++;
-                loanInstallmentPort.update(installment);
-            } else if (remainingAmount.compareTo(BigDecimal.ZERO) > 0) {
-                // Partial payment
-                installment.setPaidAmount(installment.getAmount().subtract(remainingAmount));
-                totalPaid = totalPaid.add(remainingAmount);
-                remainingAmount = BigDecimal.ZERO;
-                loanInstallmentPort.update(installment);
-            } else {
-                break;
-            }
-        }
-
-        return new PaymentResult(totalPaid, installmentsPaid);
-    }
-
-    private void validateOwnership(Loan loan, Long customerId) {
-        if (!loan.getCustomerId().equals(customerId)) {
-            throw new IllegalArgumentException("Loan does not belong to the customer");
-        }
     }
 
     private Customer validateAndGetCustomer(Long customerId) {
@@ -140,19 +93,20 @@ public class LoanApplicationService {
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
     }
 
-    private Loan initializeLoan(CreateLoanCommand request, Customer customer) {
+    private Loan initializeLoan(CreateLoanCommand request) {
         // Create new loan
-        Loan loan = Loan.createNewLoan(
+        return Loan.createNewLoan(
                 request.customerId(),
                 request.amount(),
                 request.numberOfInstallments(),
                 request.interestRate()
         );
+    }
 
-        // Validate customer customer credit and update customer
+    private void validateCustomerCreditLimitAndUpdate(Customer customer, Loan loan) {
+        // Validate customer credit and update customer
         loanDomainService.validateAndUpdateCustomerCredit(customer, loan.getTotalLoanAmount());
         customerPort.update(customer);
-        return loan;
     }
 
     private void createAndSaveInstallments(Loan savedLoan) {
