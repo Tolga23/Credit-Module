@@ -51,5 +51,21 @@ public class DataLoader implements CommandLineRunner {
                 .customerId(savedCustomer.getId())
                 .build();
         userDataAdapter.save(customerUser);
+
+        Customer customer2 = Customer.builder()
+                .name("Test2")
+                .surname("Customer2")
+                .creditLimit(BigDecimal.valueOf(10000))
+                .usedCreditLimit(BigDecimal.ZERO)
+                .build();
+        Customer savedCustomer2 = customerDataAdapter.save(customer2);
+
+        User customerUser2 = User.builder()
+                .username("customer2")
+                .password(passwordEncoder.encode("customer2"))
+                .role(UserRole.ROLE_CUSTOMER)
+                .customerId(savedCustomer2.getId())
+                .build();
+        userDataAdapter.save(customerUser2);
     }
 }

@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 public record PayLoanRequest(
+        @NotNull(message = "Customer id is required")
+        Long customerId,
         @NotNull(message = "Loan id is required")
         Long loanId,
         @NotNull(message = "Payment amount is required")

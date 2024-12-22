@@ -1,8 +1,10 @@
 package com.bank.app.application.service;
 
 import com.bank.app.application.command.CreateLoanCommand;
+import com.bank.app.application.command.LoanSearchCommand;
 import com.bank.app.application.command.PayLoanCommand;
 import com.bank.app.application.command.PaymentResult;
+import com.bank.app.domain.exception.UnauthorizedCustomerException;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
@@ -46,8 +48,8 @@ public class LoanApplicationService {
 
     @Transactional
     public PayLoanResponse payLoan(Long customerId, PayLoanCommand command) {
-        // Fetch and validate loan
-        Loan loan = fetchAndValidateLoan(command.loanId());
+        // Fetch & validate loan and ownership
+        Loan loan = validateLoanAndOwnership(command.loanId(), customerId);
 
         // Process payment
         PaymentResult result = loanPaymentService.processPayment(loan, command.amount());
@@ -69,6 +71,24 @@ public class LoanApplicationService {
         return new PayLoanResponse(result.totalPaid(), result.installmentsPaid(), loan.isPaid());
     }
 
+    private Loan validateLoanAndOwnership(Long loanId, Long customerId) {
+        // Check if loan exists
+        Loan loan = loanPort.findById(loanId)
+                .orElseThrow(() -> new IllegalArgumentException("Loan not found"));
+
+        // Check ownership of loan
+        if (!loan.getCustomerId().equals(customerId)) {
+            throw new UnauthorizedCustomerException("You do not have permission to access this loan");
+        }
+
+        // Check if loan is already paid
+        if (loan.isPaid()) {
+            throw new IllegalStateException("Loan is already paid.");
+        }
+
+        return loan;
+    }
+
     private void updateCustomerCredit(Long customerId, BigDecimal originalAmount) {
         Customer customer = customerPort.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
@@ -76,19 +96,6 @@ public class LoanApplicationService {
         // original amount of added because of the penalty/discount.
         customer.releaseCredit(originalAmount);
         customerPort.update(customer);
-    }
-
-    private Loan fetchAndValidateLoan(Long loanId) {
-        // Fetch and validate loan
-        Loan loan = loanPort.findById(loanId)
-                .orElseThrow(() -> new IllegalArgumentException("Loan not found"));
-
-        if (loan.isPaid()) {
-            throw new IllegalStateException("Loan is already paid.");
-        }
-
-//        validateOwnership(loan, customerId);
-        return loan;
     }
 
     private Customer validateAndGetCustomer(Long customerId) {
@@ -121,11 +128,14 @@ public class LoanApplicationService {
         });
     }
 
-    public List<Loan> getCustomerLoans(Long customerId, Integer numberOfInstallments, Boolean isPaid) {
+    public List<Loan> getCustomerLoans(LoanSearchCommand command) {
         // Validate customer exists
-        customerPort.findById(customerId)
+        customerPort.findById(command.customerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-        return loanPort.findByCustomerIdAndFilters(customerId, numberOfInstallments, isPaid);
+        return loanPort.findByCustomerIdAndFilters(
+                command.customerId(), 
+                command.numberOfInstallments(), 
+                command.isPaid());
     }
 }

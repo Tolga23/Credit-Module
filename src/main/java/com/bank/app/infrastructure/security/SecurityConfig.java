@@ -3,6 +3,7 @@ package com.bank.app.infrastructure.security;
 import com.bank.app.infrastructure.security.handler.CustomAccessDeniedHandler;
 import com.bank.app.infrastructure.security.handler.CustomAuthenticationEntryPoint;
 import com.bank.app.infrastructure.security.service.UserDetailsServiceImpl;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,17 +22,12 @@ import static org.springframework.security.config.http.SessionCreationPolicy.STA
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomAccessDeniedHandler accessDeniedHandler;
     private final CustomAuthenticationEntryPoint authenticationEntryPoint;
     private final UserDetailsServiceImpl userDetailsServiceImpl;
-
-    public SecurityConfig(CustomAccessDeniedHandler accessDeniedHandler, CustomAuthenticationEntryPoint authenticationEntryPoint, UserDetailsServiceImpl userDetailsServiceImpl) {
-        this.accessDeniedHandler = accessDeniedHandler;
-        this.authenticationEntryPoint = authenticationEntryPoint;
-        this.userDetailsServiceImpl = userDetailsServiceImpl;
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
