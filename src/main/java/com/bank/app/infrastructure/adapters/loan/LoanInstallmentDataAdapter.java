@@ -8,9 +8,12 @@ import com.bank.app.infrastructure.adapters.loan.mapper.LoanInstallmentEntityMap
 import com.bank.app.infrastructure.adapters.loan.repository.LoanInstallmentJpaRepository;
 import com.bank.app.infrastructure.adapters.loan.repository.LoanJpaRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,7 +27,6 @@ public class LoanInstallmentDataAdapter implements LoanInstallmentPort {
     @Override
     @Transactional
     public LoanInstallment save(LoanInstallment installment) {
-        // Get loan entity
         LoanEntity loanEntity = loanRepository.findById(installment.getLoanId())
                 .orElseThrow(() -> new IllegalStateException("Loan not found with ID: " + installment.getLoanId()));
 
@@ -50,7 +52,27 @@ public class LoanInstallmentDataAdapter implements LoanInstallmentPort {
 
     @Override
     @Transactional
-    public void update(LoanInstallment installment) {
-        repository.save(mapper.toEntity(installment));
+    public LoanInstallment update(LoanInstallment installment) {
+        LoanEntity loanEntity = loanRepository.findById(installment.getLoanId())
+                .orElseThrow(() -> new IllegalStateException("Loan not found with ID: " + installment.getLoanId()));
+
+        // Get existing entity
+        LoanInstallmentEntity existingEntity = repository.findById(installment.getId())
+                .orElseThrow(() -> new IllegalStateException("Installment not found with ID: " + installment.getId()));
+
+        // Update fields
+        existingEntity.setAmount(installment.getAmount());
+        existingEntity.setPaid(installment.isPaid());
+        existingEntity.setDueDate(installment.getDueDate());
+        existingEntity.setPaidAmount(installment.getPaidAmount());
+        existingEntity.setLoan(loanEntity);
+
+        // Set payment date only if fully paid
+        if (installment.isPaid()) {
+            existingEntity.setPaymentDate(LocalDate.now());
+        }
+
+        LoanInstallmentEntity savedEntity = repository.save(existingEntity);
+        return mapper.toDomain(savedEntity);
     }
 }

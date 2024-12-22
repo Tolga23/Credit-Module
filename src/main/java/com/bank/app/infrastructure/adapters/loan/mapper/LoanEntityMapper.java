@@ -2,9 +2,11 @@ package com.bank.app.infrastructure.adapters.loan.mapper;
 
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.infrastructure.adapters.loan.entity.LoanEntity;
+import com.bank.app.infrastructure.adapters.loan.entity.LoanInstallmentEntity;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Component
@@ -38,6 +40,7 @@ public class LoanEntityMapper {
         if (domain == null) return null;
 
         LoanEntity entity = new LoanEntity();
+        entity.setId(domain.getId());
         entity.setCustomerId(domain.getCustomerId());
         entity.setLoanAmount(domain.getLoanAmount());
         entity.setNumberOfInstallment(domain.getNumberOfInstallment());
@@ -45,9 +48,14 @@ public class LoanEntityMapper {
         entity.setPaid(domain.isPaid());
 
         if (domain.getInstallments() != null) {
-            entity.setInstallments(domain.getInstallments().stream()
+            List<LoanInstallmentEntity> installments = domain.getInstallments().stream()
                     .map(installmentMapper::toEntity)
-                    .collect(Collectors.toList()));
+                    .toList();
+
+            entity.setInstallments(installments);
+            for (LoanInstallmentEntity installment : installments) {
+                installment.setLoan(entity);
+            }
         }
 
         return entity;

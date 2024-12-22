@@ -9,5 +9,5 @@ public interface LoanInstallmentPort {
     LoanInstallment save(LoanInstallment installment);
     Optional<LoanInstallment> findById(Long id);
     List<LoanInstallment> findByLoanId(Long loanId);
-    void update(LoanInstallment installment);
+    LoanInstallment update(LoanInstallment installment);
 }

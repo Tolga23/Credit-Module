@@ -46,8 +46,17 @@ public class LoanDataAdapter implements LoanPort {
                 .toList();
     }
 
+    @Transactional
     @Override
-    public void update(Loan loan) {
-        repository.save(mapper.toEntity(loan));
+    public Loan pay(Loan loan) {
+        // Get existing entity with current installments
+        LoanEntity existingEntity = repository.findById(loan.getId())
+                .orElseThrow(() -> new IllegalStateException("Loan not found with ID: " + loan.getId()));
+
+        existingEntity.setPaid(loan.isPaid());
+
+        LoanEntity savedEntity = repository.save(existingEntity);
+
+        return mapper.toDomain(savedEntity);
     }
 }

@@ -33,4 +33,11 @@ public class Customer {
 
         usedCreditLimit = usedCreditLimit.add(amount);
     }
+
+    public void releaseCredit(BigDecimal amount) {
+        if (usedCreditLimit.compareTo(amount) < 0)
+            throw new IllegalArgumentException("Cannot release more credit than used");
+
+        usedCreditLimit = usedCreditLimit.subtract(amount);
+    }
 }

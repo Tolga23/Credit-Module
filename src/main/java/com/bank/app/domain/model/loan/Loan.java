@@ -48,6 +48,7 @@ public class Loan {
 
     public void addInstallments(LoanInstallment installment) {
         installments.add(installment);
+        checkAndUpdatePaidStatus();
     }
 
     public List<LoanInstallment> getInstallments() {
@@ -60,6 +61,22 @@ public class Loan {
 
     public BigDecimal getInstallmentAmount() {
         return getTotalLoanAmount().divide(BigDecimal.valueOf(numberOfInstallment));
+    }
+
+    public BigDecimal getTotalPaidAmount() {
+        return installments.stream()
+                .filter(LoanInstallment::isPaid)
+                .map(LoanInstallment::getPaidAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    public BigDecimal getRemainingAmount() {
+        return getTotalLoanAmount().subtract(getTotalPaidAmount());
+    }
+
+    private void checkAndUpdatePaidStatus() {
+        isPaid = !installments.isEmpty() &&
+                installments.stream().allMatch(LoanInstallment::isPaid);
     }
 
     public void validateLoan() {
