@@ -51,7 +51,7 @@ Authorization: Basic customer2 customer2   # Role: CUSTOMER - Customer ID: 2, Cr
 
 #### 1. Create Loan
 ```http
-POST /api/v1/loan
+POST /api/v1/loan/create
 Content-Type: application/json
 Authorization: Basic customer customer
 

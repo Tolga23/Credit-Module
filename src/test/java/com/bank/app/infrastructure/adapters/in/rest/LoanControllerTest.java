@@ -55,7 +55,7 @@ public class LoanControllerTest {
         Mockito.when(service.createLoan(command)).thenReturn(loan);
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/loan")
+        mockMvc.perform(post("/api/v1/loan/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(request)))
                 .andExpect(status().isOk())
@@ -70,7 +70,7 @@ public class LoanControllerTest {
         CreateLoanRequest request = new CreateLoanRequest(2L, BigDecimal.valueOf(2000), 12, BigDecimal.valueOf(0.15));
 
         // Act & Assert
-        mockMvc.perform(post("/api/v1/loan")
+        mockMvc.perform(post("/api/v1/loan/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(asJsonString(request)))
                 .andExpect(status().isForbidden());

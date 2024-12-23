@@ -23,7 +23,7 @@ import java.util.List;
 public class LoanController {
     private final LoanApplicationService service;
 
-    @PostMapping
+    @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and #request.customerId == authentication.principal.customerId)")
     public ResponseEntity<LoanResponse> createLoan(@Valid @RequestBody CreateLoanRequest request) {
         CreateLoanCommand command = CreateLoanCommand.from(request);
