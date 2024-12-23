@@ -1,11 +1,10 @@
-package com.bank.app.presentation.rest;
+package com.bank.app.infrastructure.adapters.in.rest;
 
-import com.bank.app.config.SecurityTestConfig;
 import com.bank.app.application.command.CreateLoanCommand;
 import com.bank.app.application.command.PayLoanCommand;
 import com.bank.app.application.service.LoanApplicationService;
+import com.bank.app.config.SecurityTestConfig;
 import com.bank.app.domain.model.loan.Loan;
-import com.bank.app.infrastructure.adapters.in.rest.LoanController;
 import com.bank.app.infrastructure.adapters.in.rest.dto.request.CreateLoanRequest;
 import com.bank.app.infrastructure.adapters.in.rest.dto.request.LoanSearchRequest;
 import com.bank.app.infrastructure.adapters.in.rest.dto.request.PayLoanRequest;
