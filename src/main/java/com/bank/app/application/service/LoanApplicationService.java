@@ -40,6 +40,8 @@ public class LoanApplicationService {
 
         // Save loan to get id
         Loan savedLoan = loanPort.save(loan);
+        if (savedLoan == null) throw new IllegalStateException("Loan couldn't be saved");
+
         savedLoan.setInterestRate(request.interestRate());
 
         createAndSaveInstallments(savedLoan);
@@ -89,6 +91,9 @@ public class LoanApplicationService {
         List<LoanInstallment> installments = loanDomainService.createInstallment(savedLoan);
         installments.forEach(installment -> {
             LoanInstallment savedInstallment = loanInstallmentPort.save(installment);
+            if (savedInstallment == null) {
+                throw new IllegalStateException("Failed to save loan installment");
+            }
             savedLoan.addInstallments(savedInstallment);
         });
     }

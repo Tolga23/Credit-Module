@@ -19,7 +19,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class Loan {
 
-    public static final Set<Integer> VALID_INSTALLMENTS = Set.of(3, 6, 9, 12, 24);
+    public static final Set<Integer> VALID_INSTALLMENTS = Set.of(6, 9, 12, 24);
     public static final BigDecimal MIN_INTEREST_RATE = new BigDecimal("0.1").setScale(2, RoundingMode.HALF_UP);
     public static final BigDecimal MAX_INTEREST_RATE = new BigDecimal("0.5").setScale(2, RoundingMode.HALF_UP);
     public static final int MAX_PAYMENT_MONTHS = 4;
