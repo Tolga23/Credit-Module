@@ -3,6 +3,17 @@
 ## Overview
 The Credit Module is a Spring Boot-based application that manages loan operations for a banking system. It provides REST APIs for creating loans, managing installments, and handling payments with role-based access control.
 
+In this project, I strive to follow Domain-Driven Design (DDD) principles and Hexagonal Architecture patterns. My main focus is on writing clean, maintainable code with well-defined bounded contexts. I aim to isolate core business logic from external concerns through clear architectural boundaries.
+
+### Key Components
+
+- **Application Layer**: Contains application services and command objects that orchestrate the business logic
+- **Domain Layer**: Core business logic and domain entities
+- **Infrastructure Layer**: External concerns including:
+  - Inbound adapters (REST API) for handling incoming requests
+  - Outbound adapters (Persistence) for external dependencies
+  - Security and configuration components
+
 ## Features
 - Create and manage loans
 - Track loan installments
@@ -94,30 +105,42 @@ Authorization: Basic customer customer
 
 ### Loan Creation
 - Customer must have sufficient credit limit
-- Interest rate must be between 0.1 and 0.5 
-- Number of installments must be one of: 6, 9, 12, 24
+- Interest rate must be between``` 0.1``` and ```0.5 ```
+- Number of installments must be one of:``` 6, 9, 12, 24```
 - Due Date of Installments should be first day of months
+- Total loan amount is calculated as ``` amount * (1 + interestRate).```
+  
 
 ### Loan Payment Rules
-1. **Full Installment Payment**
-   - Installments should be paid wholly or not at all.
-   - Example:  if installments amount is 10
-     - Payment of 20: Pays 2 installments
-     - Payment of 15: Pays 1 installment, 5 is returned
-     - Payment of 5: No payment processed
 
-   - Installments are paid in chronological order (earliest due date first)
-   - System automatically applies payment to the next unpaid installment
-   - Can only pay installments due within the next 3 calendar months
-   - Example: In January
-     - Can pay: January, February, March installments
-     - Cannot pay: April onwards
+#### Full Installment Payment
+- Installments must be paid fully or not at all
+- Example:  if installments amount is 10
+  - Payment of 20: Pays 2 installments
+  - Payment of 15: Pays 1 installment, 5 is returned
+  - Payment of 5: No payment processed
+
+#### Chronological Payment
+- Payments are applied to the earliest unpaid installment first
+- Installments must be due within the next 3 months to be paid
+- Example: In January
+    - Can pay: January, February, March installments
+    - Cannot pay: April onwards
+
+#### Reward & Penalty System
+- Early Payment Discount:
+  - Formula: `discount = installmentAmount * 0.001 * (days before due date)`
+- Late Payment Penalty:
+  - Formula: `penalty = installmentAmount * 0.001 * (days after due date)`
+
+## Project Structure
+
 
 ## Technical Details
 
 ### Requirements
 - Java 21
-- Maven 3.x
+- Maven 3.8.8
 
 ### Dependencies
 - Spring Boot 3.4.1

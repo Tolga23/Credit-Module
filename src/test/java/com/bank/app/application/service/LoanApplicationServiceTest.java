@@ -12,7 +12,7 @@ import com.bank.app.domain.port.LoanInstallmentPort;
 import com.bank.app.domain.port.LoanPort;
 import com.bank.app.domain.service.LoanDomainService;
 import com.bank.app.domain.service.LoanPaymentService;
-import com.bank.app.presentation.dto.response.PayLoanResponse;
+import com.bank.app.infrastructure.adapters.in.rest.dto.response.PayLoanResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

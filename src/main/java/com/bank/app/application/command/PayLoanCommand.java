@@ -1,6 +1,6 @@
 package com.bank.app.application.command;
 
-import com.bank.app.presentation.dto.request.PayLoanRequest;
+import com.bank.app.infrastructure.adapters.in.rest.dto.request.PayLoanRequest;
 
 import java.math.BigDecimal;
 

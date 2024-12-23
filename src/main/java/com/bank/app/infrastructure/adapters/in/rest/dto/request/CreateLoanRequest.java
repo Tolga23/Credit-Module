@@ -1,6 +1,5 @@
-package com.bank.app.application.command;
+package com.bank.app.infrastructure.adapters.in.rest.dto.request;
 
-import com.bank.app.infrastructure.adapters.in.rest.dto.request.CreateLoanRequest;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
@@ -8,7 +7,7 @@ import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
 
-public record CreateLoanCommand(
+public record CreateLoanRequest(
         @NotNull(message = "Customer ID is required")
         Long customerId,
 
@@ -24,11 +23,4 @@ public record CreateLoanCommand(
         @Digits(integer = 1, fraction = 2, message = "Interest rate must have at most 2 decimal places")
         BigDecimal interestRate
 ) {
-    public static CreateLoanCommand from(CreateLoanRequest request) {
-        return new CreateLoanCommand(
-                request.customerId(),
-                request.amount(),
-                request.numberOfInstallments(),
-                request.interestRate());
-    }
 }
