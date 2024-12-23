@@ -3,6 +3,7 @@
 ## Overview
 The Credit Module is a Spring Boot-based application that manages loan operations for a banking system. It provides REST APIs for creating loans, managing installments, and handling payments with role-based access control.
 
+## Project Architecture Overview
 In this project, I strive to follow Domain-Driven Design (DDD) principles and Hexagonal Architecture patterns. My main focus is on writing clean, maintainable code with well-defined bounded contexts. I aim to isolate core business logic from external concerns through clear architectural boundaries.
 
 ### Key Components
@@ -132,9 +133,6 @@ Authorization: Basic customer customer
   - Formula: `discount = installmentAmount * 0.001 * (days before due date)`
 - Late Payment Penalty:
   - Formula: `penalty = installmentAmount * 0.001 * (days after due date)`
-
-## Project Structure
-
 
 ## Technical Details
 
