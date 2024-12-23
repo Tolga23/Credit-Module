@@ -2,7 +2,6 @@ package com.bank.app.domain.service;
 
 import com.bank.app.application.command.CreateLoanCommand;
 import com.bank.app.domain.exception.InsufficientCreditException;
-import com.bank.app.domain.exception.UnauthorizedCustomerException;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
@@ -16,7 +15,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class LoanDomainService {
+public class LoanCreateService {
 
     public Loan createLoan(Customer customer, CreateLoanCommand request) {
         Loan loan = Loan.createNewLoan(
@@ -24,7 +23,7 @@ public class LoanDomainService {
                 request.amount(),
                 request.numberOfInstallments(),
                 request.interestRate());
-        
+
         //  total loan amount = loanAmount * (1 + interestRate)
         validateAndUpdateCustomerCredit(customer, loan.getTotalLoanAmount());
         return loan;
@@ -35,18 +34,6 @@ public class LoanDomainService {
             throw new InsufficientCreditException(loanAmount, customer.getAvailableCreditLimit());
 
         customer.useCredit(loanAmount);
-    }
-
-    public void validateOwnership(Loan loan, Long customerId) {
-        // Check ownership of loan
-        if (!loan.getCustomerId().equals(customerId)) {
-            throw new UnauthorizedCustomerException("You do not have permission to access this loan");
-        }
-
-        // Check if loan is already paid
-        if (loan.isPaid()) {
-            throw new IllegalStateException("Loan is already paid.");
-        }
     }
 
     public List<LoanInstallment> createInstallment(Loan loan) {

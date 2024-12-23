@@ -10,7 +10,7 @@ import com.bank.app.domain.model.loan.LoanInstallment;
 import com.bank.app.domain.port.CustomerPort;
 import com.bank.app.domain.port.LoanInstallmentPort;
 import com.bank.app.domain.port.LoanPort;
-import com.bank.app.domain.service.LoanDomainService;
+import com.bank.app.domain.service.LoanCreateService;
 import com.bank.app.domain.service.LoanPaymentService;
 import com.bank.app.infrastructure.adapters.in.rest.dto.response.PayLoanResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +25,7 @@ import java.util.List;
 public class LoanApplicationService {
     private final LoanPort loanPort;
     private final CustomerPort customerPort;
-    private final LoanDomainService loanDomainService;
+    private final LoanCreateService loanCreateService;
     private final LoanInstallmentPort loanInstallmentPort;
     private final LoanPaymentService loanPaymentService;
 
@@ -34,7 +34,7 @@ public class LoanApplicationService {
         Customer customer = customerPort.findById(request.customerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-        Loan loan = loanDomainService.createLoan(customer, request);
+        Loan loan = loanCreateService.createLoan(customer, request);
         // Customer usedCreditLimit update
         customerPort.update(customer);
 
@@ -55,7 +55,7 @@ public class LoanApplicationService {
         Loan loan = loanPort.findById(command.loanId())
                 .orElseThrow(() -> new IllegalArgumentException("Loan not found"));
 
-        loanDomainService.validateOwnership(loan, command.customerId());
+        loanPaymentService.validateOwnership(loan, command.customerId());
 
         // Process payment
         PaymentResult result = loanPaymentService.processPayment(loan, command.amount());
@@ -88,7 +88,7 @@ public class LoanApplicationService {
 
     private void createAndSaveInstallments(Loan savedLoan) {
         // Create and save installments
-        List<LoanInstallment> installments = loanDomainService.createInstallment(savedLoan);
+        List<LoanInstallment> installments = loanCreateService.createInstallment(savedLoan);
         installments.forEach(installment -> {
             LoanInstallment savedInstallment = loanInstallmentPort.save(installment);
             if (savedInstallment == null) {

@@ -10,7 +10,7 @@ import com.bank.app.domain.model.loan.LoanInstallment;
 import com.bank.app.domain.port.CustomerPort;
 import com.bank.app.domain.port.LoanInstallmentPort;
 import com.bank.app.domain.port.LoanPort;
-import com.bank.app.domain.service.LoanDomainService;
+import com.bank.app.domain.service.LoanCreateService;
 import com.bank.app.domain.service.LoanPaymentService;
 import com.bank.app.infrastructure.adapters.in.rest.dto.response.PayLoanResponse;
 import org.junit.jupiter.api.Assertions;
@@ -46,7 +46,7 @@ public class LoanApplicationServiceTest {
     private CustomerPort customerPort;
 
     @Mock
-    private LoanDomainService loanDomainService;
+    private LoanCreateService loanCreateService;
 
     @Mock
     private LoanInstallmentPort loanInstallmentPort;
@@ -119,9 +119,9 @@ public class LoanApplicationServiceTest {
 
         // Arrange
         when(customerPort.findById(CUSTOMER_ID)).thenReturn(Optional.of(mockCustomer));
-        when(loanDomainService.createLoan(mockCustomer, command)).thenReturn(mockLoan);
+        when(loanCreateService.createLoan(mockCustomer, command)).thenReturn(mockLoan);
         when(loanPort.save(mockLoan)).thenReturn(mockLoan);
-        when(loanDomainService.createInstallment(mockLoan)).thenReturn(mockInstallments);
+        when(loanCreateService.createInstallment(mockLoan)).thenReturn(mockInstallments);
         when(loanInstallmentPort.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
@@ -134,7 +134,7 @@ public class LoanApplicationServiceTest {
 
         // Verify interactions
         verify(customerPort).findById(CUSTOMER_ID);
-        verify(loanDomainService).createLoan(mockCustomer, command);
+        verify(loanCreateService).createLoan(mockCustomer, command);
         verify(customerPort).update(mockCustomer);
         verify(loanPort).save(mockLoan);
     }
@@ -151,7 +151,7 @@ public class LoanApplicationServiceTest {
 
         // Verify
         verify(customerPort).findById(CUSTOMER_ID);
-        verifyNoInteractions(loanPort, loanDomainService);
+        verifyNoInteractions(loanPort, loanCreateService);
     }
 
     @Test
@@ -219,9 +219,9 @@ public class LoanApplicationServiceTest {
     @Test
     void testCreateLoan_InstallmentSaveFailed() {
         when(customerPort.findById(anyLong())).thenReturn(Optional.of(mockCustomer));
-        when(loanDomainService.createLoan(any(), any())).thenReturn(mockLoan);
+        when(loanCreateService.createLoan(any(), any())).thenReturn(mockLoan);
         when(loanPort.save(any())).thenReturn(mockLoan);
-        when(loanDomainService.createInstallment(any())).thenReturn(mockInstallments);
+        when(loanCreateService.createInstallment(any())).thenReturn(mockInstallments);
         when(loanInstallmentPort.save(any())).thenReturn(null);
 
         assertThrows(IllegalStateException.class,
@@ -235,7 +235,7 @@ public class LoanApplicationServiceTest {
     void testPayLoan_ValidationFailed() {
         when(loanPort.findById(anyLong())).thenReturn(Optional.of(mockLoan));
         doThrow(new IllegalArgumentException("Invalid ownership"))
-                .when(loanDomainService).validateOwnership(any(), anyLong());
+                .when(loanPaymentService).validateOwnership(any(), anyLong());
 
         assertThrows(IllegalArgumentException.class,
                 () -> loanApplicationService.payLoan(payLoanCommand));

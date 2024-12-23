@@ -1,6 +1,7 @@
 package com.bank.app.domain.service;
 
 import com.bank.app.application.command.PaymentResult;
+import com.bank.app.domain.exception.UnauthorizedCustomerException;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,18 @@ public class LoanPaymentService {
 
         loan.checkAndUpdatePaidStatus();
         return new PaymentResult(totalPaid, originalAmount, installmentsPaid);
+    }
+
+    public void validateOwnership(Loan loan, Long customerId) {
+        // Check ownership of loan
+        if (!loan.getCustomerId().equals(customerId)) {
+            throw new UnauthorizedCustomerException("You do not have permission to access this loan");
+        }
+
+        // Check if loan is already paid
+        if (loan.isPaid()) {
+            throw new IllegalStateException("Loan is already paid.");
+        }
     }
 
     private void validatePaymentAmount(LoanInstallment firstInstallment, BigDecimal amount) {
