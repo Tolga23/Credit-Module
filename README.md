@@ -138,7 +138,7 @@ Authorization: Basic customer customer
 
 ### Requirements
 - Java 21
-- Maven 3.8.8
+- Maven 3.8.x
 
 ### Dependencies
 - Spring Boot 3.4.1
@@ -149,15 +149,35 @@ Authorization: Basic customer customer
 - H2 Database (in-memory)
 - Lombok
 
-### Building and Running
-1. Build the project:
-```bash
-mvn clean install
-```
+### Build and Run
 
-2. Run the application:
+- Clone the repository
+  - Navigate to the project directory
+ 
 ```bash
+# Build the project
+mvn clean install
+
+# Run the application
 mvn spring-boot:run
 ```
 
-The application will start with an in-memory H2 database and create test users automatically.
+The application will start on `http://localhost:8080`
+
+### H2 Database Access
+
+The project uses H2 in-memory database for development and testing.
+
+- **Console URL**: `http://localhost:8080/h2-console`
+- **JDBC URL**: `jdbc:h2:mem:credit`
+- **Username**: `sa`
+- **Password**: ``
+
+To access the H2 console:
+1. Start the application
+2. Navigate to `http://localhost:8080/h2-console`
+3. Use the credentials above to login
+4. You can view and query all tables in the database
+
+Note: The database is reset each time the application restarts as it runs in-memory.
+
