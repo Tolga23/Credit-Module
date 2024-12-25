@@ -5,6 +5,7 @@ import com.bank.app.domain.exception.InsufficientCreditException;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
+import com.bank.app.domain.port.LoanCreatePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -15,8 +16,9 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class LoanCreateService {
+public class LoanCreateService implements LoanCreatePort {
 
+    @Override
     public Loan createLoan(Customer customer, CreateLoanCommand request) {
         Loan loan = Loan.createNewLoan(
                 request.customerId(),
@@ -36,6 +38,7 @@ public class LoanCreateService {
         customer.useCredit(loanAmount);
     }
 
+    @Override
     public List<LoanInstallment> createInstallment(Loan loan) {
         List<LoanInstallment> installments = new ArrayList<>();
         BigDecimal installmentAmount = loan.getInstallmentAmount();

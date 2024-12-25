@@ -1,9 +1,11 @@
 package com.bank.app.domain.service;
 
+import com.bank.app.application.command.PayLoanCommand;
 import com.bank.app.application.command.PaymentResult;
 import com.bank.app.domain.exception.UnauthorizedCustomerException;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
+import com.bank.app.domain.port.LoanPaymentPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,16 +16,18 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class LoanPaymentService {
+public class LoanPaymentService implements LoanPaymentPort {
 
-    public PaymentResult processPayment(Loan loan, BigDecimal amount) {
+    @Override
+    public PaymentResult processPayment(Loan loan, PayLoanCommand request) {
         validateLoanForPayment(loan);
+        validateOwnership(loan, request.customerId());
 
         LocalDate paymentDate = LocalDate.now();
         List<LoanInstallment> eligibleInstallments = getEligibleInstallments(loan, paymentDate);
 
-        validatePaymentAmount(eligibleInstallments.get(0), amount);
-        return processInstallmentPayments(eligibleInstallments, amount, paymentDate, loan);
+        validatePaymentAmount(eligibleInstallments.get(0), request.amount());
+        return processInstallmentPayments(eligibleInstallments, request.amount(), paymentDate, loan);
     }
 
     private PaymentResult processInstallmentPayments(List<LoanInstallment> eligibleInstallments,

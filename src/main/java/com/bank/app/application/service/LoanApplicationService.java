@@ -7,11 +7,7 @@ import com.bank.app.application.command.PaymentResult;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
-import com.bank.app.domain.port.CustomerPort;
-import com.bank.app.domain.port.LoanInstallmentPort;
-import com.bank.app.domain.port.LoanPort;
-import com.bank.app.domain.service.LoanCreateService;
-import com.bank.app.domain.service.LoanPaymentService;
+import com.bank.app.domain.port.*;
 import com.bank.app.infrastructure.adapters.in.rest.dto.response.PayLoanResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,28 +21,29 @@ import java.util.List;
 public class LoanApplicationService {
     private final LoanPort loanPort;
     private final CustomerPort customerPort;
-    private final LoanCreateService loanCreateService;
+    private final LoanCreatePort loanCreatePort;
     private final LoanInstallmentPort loanInstallmentPort;
-    private final LoanPaymentService loanPaymentService;
+    private final LoanPaymentPort loanPaymentPort;
 
     @Transactional
     public Loan createLoan(CreateLoanCommand request) {
         Customer customer = customerPort.findById(request.customerId())
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 
-        Loan loan = loanCreateService.createLoan(customer, request);
+        Loan loan = loanCreatePort.createLoan(customer, request);
         // Customer usedCreditLimit update
         customerPort.update(customer);
 
         // Save loan to get id
-        Loan savedLoan = loanPort.save(loan);
-        if (savedLoan == null) throw new IllegalStateException("Loan couldn't be saved");
+        loan = loanPort.save(loan);
+        if (loan == null) throw new IllegalStateException("Loan couldn't be saved");
 
-        savedLoan.setInterestRate(request.interestRate());
+        // maybe it can be Transient in LoanEntity?
+        loan.setInterestRate(request.interestRate());
 
-        createAndSaveInstallments(savedLoan);
+        createAndSaveInstallments(loan);
 
-        return savedLoan;
+        return loan;
     }
 
     @Transactional
@@ -55,10 +52,8 @@ public class LoanApplicationService {
         Loan loan = loanPort.findById(command.loanId())
                 .orElseThrow(() -> new IllegalArgumentException("Loan not found"));
 
-        loanPaymentService.validateOwnership(loan, command.customerId());
-
         // Process payment
-        PaymentResult result = loanPaymentService.processPayment(loan, command.amount());
+        PaymentResult result = loanPaymentPort.processPayment(loan, command);
 
         // Save changes if payment was successful
         if (result.totalPaid().compareTo(BigDecimal.ZERO) > 0) {
@@ -88,7 +83,7 @@ public class LoanApplicationService {
 
     private void createAndSaveInstallments(Loan savedLoan) {
         // Create and save installments
-        List<LoanInstallment> installments = loanCreateService.createInstallment(savedLoan);
+        List<LoanInstallment> installments = loanCreatePort.createInstallment(savedLoan);
         installments.forEach(installment -> {
             LoanInstallment savedInstallment = loanInstallmentPort.save(installment);
             if (savedInstallment == null) {
