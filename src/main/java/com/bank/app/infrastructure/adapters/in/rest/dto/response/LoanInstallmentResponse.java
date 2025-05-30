@@ -1,5 +1,6 @@
 package com.bank.app.infrastructure.adapters.in.rest.dto.response;
 
+import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.loan.LoanInstallment;
 
 import java.math.BigDecimal;
@@ -22,8 +23,8 @@ public record LoanInstallmentResponse(
         return new LoanInstallmentResponse(
                 installment.getId(),
                 installment.getLoanId(),
-                installment.getAmount(),
-                installment.getPaidAmount(),
+                installment.getAmount().getValue(),
+                installment.getPaidAmount().getValue(),
                 installment.getDueDate(),
                 installment.getPaymentDate(),
                 installment.isPaid()

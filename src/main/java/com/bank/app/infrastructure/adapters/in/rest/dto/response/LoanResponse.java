@@ -22,7 +22,7 @@ public record LoanResponse(
         return new LoanResponse(
                 loan.getId(),
                 loan.getCustomerId(),
-                loan.getLoanAmount(),
+                loan.getLoanAmount().getValue(),
                 loan.getNumberOfInstallment(),
                 loan.getCreatedDate(),
                 loan.isPaid(),

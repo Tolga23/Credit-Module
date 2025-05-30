@@ -4,6 +4,7 @@ import com.bank.app.application.command.CreateLoanCommand;
 import com.bank.app.application.command.LoanSearchCommand;
 import com.bank.app.application.command.PayLoanCommand;
 import com.bank.app.application.command.PaymentResult;
+import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
@@ -56,7 +57,7 @@ public class LoanApplicationService {
         PaymentResult result = loanPaymentPort.processPayment(loan, command);
 
         // Save changes if payment was successful
-        if (result.totalPaid().compareTo(BigDecimal.ZERO) > 0) {
+        if (result.totalPaid().compareTo(Money.ZERO) > 0) {
             // Update loan installments
             loan.getInstallments().stream()
                     .filter(LoanInstallment::isPaid)
@@ -69,10 +70,10 @@ public class LoanApplicationService {
             updateCustomerCredit(command.customerId(), result.originalAmount());
         }
 
-        return new PayLoanResponse(result.totalPaid(), result.installmentsPaid(), loan.isPaid());
+        return new PayLoanResponse(result.totalPaid().getValue(), result.installmentsPaid(), loan.isPaid());
     }
 
-    private void updateCustomerCredit(Long customerId, BigDecimal originalAmount) {
+    private void updateCustomerCredit(Long customerId, Money originalAmount) {
         Customer customer = customerPort.findById(customerId)
                 .orElseThrow(() -> new IllegalArgumentException("Customer not found"));
 

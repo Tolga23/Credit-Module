@@ -1,5 +1,6 @@
 package com.bank.app.infrastructure.adapters.out.persistence.customer.mapper;
 
+import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.infrastructure.adapters.out.persistence.customer.entity.CustomerEntity;
 import org.springframework.stereotype.Component;
@@ -13,8 +14,8 @@ public class CustomerEntityMapper {
                 .id(entity.getId())
                 .name(entity.getName())
                 .surname(entity.getSurname())
-                .creditLimit(entity.getCreditLimit())
-                .usedCreditLimit(entity.getUsedCreditLimit())
+                .creditLimit(new Money(entity.getCreditLimit()))
+                .usedCreditLimit(new Money(entity.getUsedCreditLimit()))
                 .build();
 
         return customer;
@@ -29,8 +30,8 @@ public class CustomerEntityMapper {
         entity.setId(domain.getId());
         entity.setName(domain.getName());
         entity.setSurname(domain.getSurname());
-        entity.setCreditLimit(domain.getCreditLimit());
-        entity.setUsedCreditLimit(domain.getUsedCreditLimit());
+        entity.setCreditLimit(domain.getCreditLimit().getValue());
+        entity.setUsedCreditLimit(domain.getUsedCreditLimit().getValue());
         return entity;
     }
 }

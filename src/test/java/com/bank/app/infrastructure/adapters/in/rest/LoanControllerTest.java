@@ -4,6 +4,7 @@ import com.bank.app.application.command.CreateLoanCommand;
 import com.bank.app.application.command.PayLoanCommand;
 import com.bank.app.application.service.LoanApplicationService;
 import com.bank.app.config.SecurityTestConfig;
+import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.infrastructure.adapters.in.rest.dto.request.CreateLoanRequest;
 import com.bank.app.infrastructure.adapters.in.rest.dto.request.LoanSearchRequest;
@@ -47,7 +48,7 @@ public class LoanControllerTest {
         Loan loan = Loan.builder()
                 .id(1L)
                 .customerId(1L)
-                .loanAmount(BigDecimal.valueOf(1000))
+                .loanAmount(new Money(BigDecimal.valueOf(1000)))
                 .numberOfInstallment(12)
                 .interestRate(BigDecimal.valueOf(0.2))
                 .build();
@@ -83,7 +84,7 @@ public class LoanControllerTest {
         Loan loan1 = Loan.builder()
                 .id(1L)
                 .customerId(1L)
-                .loanAmount(BigDecimal.valueOf(1000))
+                .loanAmount(new Money(BigDecimal.valueOf(1000)))
                 .numberOfInstallment(12)
                 .createdDate(java.time.LocalDateTime.now())
                 .isPaid(true)
@@ -91,7 +92,7 @@ public class LoanControllerTest {
         Loan loan2 = Loan.builder()
                 .id(2L)
                 .customerId(2L)
-                .loanAmount(BigDecimal.valueOf(2000))
+                .loanAmount(new Money(BigDecimal.valueOf(2000)))
                 .numberOfInstallment(12)
                 .createdDate(java.time.LocalDateTime.now())
                 .isPaid(false)

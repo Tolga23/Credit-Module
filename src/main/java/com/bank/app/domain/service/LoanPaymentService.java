@@ -3,13 +3,13 @@ package com.bank.app.domain.service;
 import com.bank.app.application.command.PayLoanCommand;
 import com.bank.app.application.command.PaymentResult;
 import com.bank.app.domain.exception.UnauthorizedCustomerException;
+import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
 import com.bank.app.domain.port.LoanPaymentPort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -25,22 +25,22 @@ public class LoanPaymentService implements LoanPaymentPort {
 
         LocalDate paymentDate = LocalDate.now();
         List<LoanInstallment> eligibleInstallments = getEligibleInstallments(loan, paymentDate);
-
-        validatePaymentAmount(eligibleInstallments.get(0), request.amount());
-        return processInstallmentPayments(eligibleInstallments, request.amount(), paymentDate, loan);
+        Money paymentAmount = new Money(request.amount());
+        validatePaymentAmount(eligibleInstallments.get(0),paymentAmount );
+        return processInstallmentPayments(eligibleInstallments, paymentAmount, paymentDate, loan);
     }
 
     private PaymentResult processInstallmentPayments(List<LoanInstallment> eligibleInstallments,
-                                                     BigDecimal amount,
+                                                     Money amount,
                                                      LocalDate paymentDate,
                                                      Loan loan) {
-        BigDecimal remainingAmount = amount;
-        BigDecimal totalPaid = BigDecimal.ZERO;
-        BigDecimal originalAmount = BigDecimal.ZERO;
+        Money remainingAmount = amount;
+        Money totalPaid = Money.ZERO;
+        Money originalAmount = Money.ZERO;
         int installmentsPaid = 0;
 
         for (LoanInstallment installment : eligibleInstallments) {
-            BigDecimal requiredAmount = installment.calculatePaymentAmount(paymentDate);
+            Money requiredAmount = installment.calculatePaymentAmount(paymentDate);
 
             if (remainingAmount.compareTo(requiredAmount) >= 0) {
                 originalAmount = originalAmount.add(installment.getAmount());
@@ -69,8 +69,8 @@ public class LoanPaymentService implements LoanPaymentPort {
         }
     }
 
-    private void validatePaymentAmount(LoanInstallment firstInstallment, BigDecimal amount) {
-        BigDecimal requiredAmount = firstInstallment.getAmount();
+    private void validatePaymentAmount(LoanInstallment firstInstallment, Money amount) {
+        Money requiredAmount = firstInstallment.getAmount();
         if (amount.compareTo(requiredAmount) < 0) {
             throw new IllegalArgumentException("Payment amount must be at least: " + requiredAmount);
         }

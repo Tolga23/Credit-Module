@@ -1,10 +1,10 @@
 package com.bank.app.application.command;
 
-import java.math.BigDecimal;
+import com.bank.app.domain.model.common.Money;
 
 public record PaymentResult(
-        BigDecimal totalPaid,
-        BigDecimal originalAmount,
+        Money totalPaid,
+        Money originalAmount,
         int installmentsPaid
 ) {
 }

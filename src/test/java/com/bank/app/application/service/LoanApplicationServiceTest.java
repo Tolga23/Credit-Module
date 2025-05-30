@@ -4,6 +4,7 @@ import com.bank.app.application.command.CreateLoanCommand;
 import com.bank.app.application.command.LoanSearchCommand;
 import com.bank.app.application.command.PayLoanCommand;
 import com.bank.app.application.command.PaymentResult;
+import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
@@ -53,7 +54,7 @@ public class LoanApplicationServiceTest {
     private LoanApplicationService loanApplicationService;
 
     private static final Long CUSTOMER_ID = 1L;
-    private static final BigDecimal LOAN_AMOUNT = BigDecimal.valueOf(1000);
+    private static final Money LOAN_AMOUNT = new Money(BigDecimal.valueOf(1000));
     private static final int INSTALLMENTS = 12;
     private static final BigDecimal INTEREST_RATE = BigDecimal.valueOf(0.1);
 
@@ -70,8 +71,8 @@ public class LoanApplicationServiceTest {
                 .id(CUSTOMER_ID)
                 .name("Test")
                 .surname("Customer")
-                .creditLimit(BigDecimal.valueOf(5000))
-                .usedCreditLimit(BigDecimal.valueOf(1000))
+                .creditLimit(new Money(BigDecimal.valueOf(5000)))
+                .usedCreditLimit(new Money(BigDecimal.valueOf(1000)))
                 .build();
 
         mockLoan = Loan.builder()
@@ -83,9 +84,8 @@ public class LoanApplicationServiceTest {
                 .isPaid(false)
                 .createdDate(LocalDateTime.now())
                 .build();
-        BigDecimal totalLoanAmount = LOAN_AMOUNT.multiply(BigDecimal.ONE.add(INTEREST_RATE));
-        BigDecimal installmentAmount = totalLoanAmount.divide(BigDecimal.valueOf(INSTALLMENTS), 2, RoundingMode.HALF_UP);
-        ;
+        Money totalLoanAmount = LOAN_AMOUNT.multiply(BigDecimal.ONE.add(INTEREST_RATE));
+        Money installmentAmount = totalLoanAmount.divide(BigDecimal.valueOf(INSTALLMENTS), 2, RoundingMode.HALF_UP);
         mockInstallments = Arrays.asList(
                 LoanInstallment.builder()
                         .id(1L)
@@ -105,7 +105,7 @@ public class LoanApplicationServiceTest {
     }
 
     private CreateLoanCommand createLoanCommand() {
-        return new CreateLoanCommand(CUSTOMER_ID, LOAN_AMOUNT, INSTALLMENTS, INTEREST_RATE);
+        return new CreateLoanCommand(CUSTOMER_ID, LOAN_AMOUNT.getValue(), INSTALLMENTS, INTEREST_RATE);
     }
 
     @Test
@@ -152,7 +152,7 @@ public class LoanApplicationServiceTest {
     @Test
     public void testPayLoan_Success() {
         PayLoanCommand command = new PayLoanCommand(CUSTOMER_ID, 1L, BigDecimal.valueOf(500));
-        PaymentResult paymentResult = new PaymentResult(BigDecimal.valueOf(500), BigDecimal.valueOf(500), 1);
+        PaymentResult paymentResult = new PaymentResult(new Money(BigDecimal.valueOf(500)), new Money(BigDecimal.valueOf(500)), 1);
 
         // Arrange
         when(loanPort.findById(1L)).thenReturn(Optional.of(mockLoan));

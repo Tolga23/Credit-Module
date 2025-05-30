@@ -1,12 +1,11 @@
 package com.bank.app.domain.model.customer;
 
 import com.bank.app.domain.exception.InsufficientCreditException;
+import com.bank.app.domain.model.common.Money;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 
 @Data
 @Builder
@@ -16,26 +15,28 @@ public class Customer {
     private Long id;
     private String name;
     private String surname;
-    private BigDecimal creditLimit;
-    private BigDecimal usedCreditLimit;
+    @Builder.Default
+    private Money creditLimit = Money.ZERO;
+    @Builder.Default
+    private Money usedCreditLimit = Money.ZERO;
 
-    public BigDecimal getAvailableCreditLimit() {
+    public Money getAvailableCreditLimit() {
         return creditLimit.subtract(usedCreditLimit);
     }
 
-    public boolean checkCreditLimit(BigDecimal creditLimit) {
-        return getAvailableCreditLimit().compareTo(creditLimit) >= 0;
+    public boolean hasSufficientCredit(Money creditLimit) {
+        return getAvailableCreditLimit().isGreaterThanOrEqual(creditLimit);
     }
 
-    public void useCredit(BigDecimal amount) {
-        if (!checkCreditLimit(amount))
+    public void useCredit(Money amount) {
+        if (!hasSufficientCredit(amount))
             throw new InsufficientCreditException(amount, getAvailableCreditLimit());
 
         usedCreditLimit = usedCreditLimit.add(amount);
     }
 
-    public void releaseCredit(BigDecimal amount) {
-        if (usedCreditLimit.compareTo(amount) < 0)
+    public void releaseCredit(Money amount) {
+        if (usedCreditLimit.isLessThan(amount))
             throw new IllegalArgumentException("Cannot release more credit than used");
 
         usedCreditLimit = usedCreditLimit.subtract(amount);
