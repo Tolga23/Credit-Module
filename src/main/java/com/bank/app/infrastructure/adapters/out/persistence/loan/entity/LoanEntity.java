@@ -20,6 +20,9 @@ public class LoanEntity extends BaseEntity {
     @Column(nullable = false)
     private BigDecimal loanAmount;
 
+    @Column(name = "interest_rate", nullable = false)
+    private BigDecimal interestRate;
+
     @Column(name = "number_of_installments", nullable = false)
     private Integer numberOfInstallment;
 

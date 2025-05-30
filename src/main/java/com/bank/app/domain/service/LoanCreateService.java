@@ -1,6 +1,7 @@
 package com.bank.app.domain.service;
 
 import com.bank.app.application.command.CreateLoanCommand;
+import com.bank.app.domain.model.common.InterestRate;
 import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
@@ -20,12 +21,14 @@ public class LoanCreateService implements LoanCreatePort {
     @Override
     public Loan createLoan(Customer customer, CreateLoanCommand request) {
         Money loanAmount = new Money(request.amount());
+        InterestRate interestRate = new InterestRate(request.interestRate());
 
         Loan loan = Loan.createNewLoan(
                 request.customerId(),
                 loanAmount,
                 request.numberOfInstallments(),
-                request.interestRate());
+                interestRate
+                );
 
         //  total loan amount = loanAmount * (1 + interestRate)
         Money totalLoanAmount = loan.getTotalLoanAmount();
