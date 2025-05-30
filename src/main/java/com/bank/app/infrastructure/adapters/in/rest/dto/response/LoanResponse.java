@@ -23,7 +23,7 @@ public record LoanResponse(
                 loan.getId(),
                 loan.getCustomerId(),
                 loan.getLoanAmount().getValue(),
-                loan.getNumberOfInstallment(),
+                loan.getNumberOfInstallment().getNumberOfInstallment(),
                 loan.getCreatedDate(),
                 loan.isPaid(),
                 loan.getInstallments().stream()

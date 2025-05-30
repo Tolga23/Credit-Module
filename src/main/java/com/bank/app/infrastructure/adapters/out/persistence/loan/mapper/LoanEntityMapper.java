@@ -1,5 +1,6 @@
 package com.bank.app.infrastructure.adapters.out.persistence.loan.mapper;
 
+import com.bank.app.domain.model.common.InstallmentCount;
 import com.bank.app.domain.model.common.InterestRate;
 import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.loan.Loan;
@@ -22,13 +23,14 @@ public class LoanEntityMapper {
 
         Money loanAmount = new Money(entity.getLoanAmount());
         InterestRate interestRate = new InterestRate(entity.getInterestRate());
+        InstallmentCount numberOfInstallment = new InstallmentCount(entity.getNumberOfInstallment());
 
         Loan loan = Loan.builder()
                 .id(entity.getId())
                 .customerId(entity.getCustomerId())
                 .loanAmount(loanAmount)
                 .interestRate(interestRate)
-                .numberOfInstallment(entity.getNumberOfInstallment())
+                .numberOfInstallment(numberOfInstallment)
                 .createdDate(entity.getCreateDate())
                 .isPaid(entity.isPaid())
                 .build();
@@ -50,7 +52,7 @@ public class LoanEntityMapper {
         entity.setCustomerId(domain.getCustomerId());
         entity.setLoanAmount(domain.getLoanAmount().getValue());
         entity.setInterestRate(domain.getInterestRate().getInterestRate());
-        entity.setNumberOfInstallment(domain.getNumberOfInstallment());
+        entity.setNumberOfInstallment(domain.getNumberOfInstallment().getNumberOfInstallment());
         entity.setCreateDate(domain.getCreatedDate());
         entity.setPaid(domain.isPaid());
 

@@ -1,6 +1,7 @@
 package com.bank.app.domain.service;
 
 import com.bank.app.application.command.CreateLoanCommand;
+import com.bank.app.domain.model.common.InstallmentCount;
 import com.bank.app.domain.model.common.InterestRate;
 import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.customer.Customer;
@@ -20,13 +21,17 @@ public class LoanCreateService implements LoanCreatePort {
 
     @Override
     public Loan createLoan(Customer customer, CreateLoanCommand request) {
+        if (customer == null)
+            throw new IllegalArgumentException("Customer cannot be null");
+
         Money loanAmount = new Money(request.amount());
         InterestRate interestRate = new InterestRate(request.interestRate());
+        InstallmentCount numberOfInstallments = new InstallmentCount(request.numberOfInstallments());
 
         Loan loan = Loan.createNewLoan(
                 request.customerId(),
                 loanAmount,
-                request.numberOfInstallments(),
+                numberOfInstallments,
                 interestRate
                 );
 
@@ -42,7 +47,7 @@ public class LoanCreateService implements LoanCreatePort {
         Money installmentAmount = loan.getInstallmentAmount();
         LocalDate firstDueDate = calculateFirstDueDate();
 
-        for (int i = 1; i <= loan.getNumberOfInstallment(); i++) {
+        for (int i = 1; i <= loan.getNumberOfInstallment().getNumberOfInstallment(); i++) {
             LoanInstallment installment = LoanInstallment.builder()
                     .loanId(loan.getId())
                     .amount(installmentAmount)

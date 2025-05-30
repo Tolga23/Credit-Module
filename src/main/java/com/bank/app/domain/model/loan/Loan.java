@@ -1,5 +1,6 @@
 package com.bank.app.domain.model.loan;
 
+import com.bank.app.domain.model.common.InstallmentCount;
 import com.bank.app.domain.model.common.InterestRate;
 import com.bank.app.domain.model.common.Money;
 import lombok.AllArgsConstructor;
@@ -20,13 +21,12 @@ import java.util.Set;
 @AllArgsConstructor
 public class Loan {
 
-    public static final Set<Integer> VALID_INSTALLMENTS = Set.of(6, 9, 12, 24);
     public static final int MAX_PAYMENT_MONTHS = 4;
 
     private Long id;
     private Long customerId;
     private Money loanAmount;
-    private Integer numberOfInstallment;
+    private InstallmentCount numberOfInstallment;
     private InterestRate interestRate;
     @Builder.Default
     private LocalDateTime createdDate = LocalDateTime.now();
@@ -35,16 +35,13 @@ public class Loan {
     @Builder.Default
     private List<LoanInstallment> installments = new ArrayList<>();
 
-    public static Loan createNewLoan(Long customerId, Money amount, Integer numberOfInstallment, InterestRate interestRate) {
-        Loan loan = Loan.builder()
+    public static Loan createNewLoan(Long customerId, Money amount, InstallmentCount numberOfInstallment, InterestRate interestRate) {
+        return Loan.builder()
                 .customerId(customerId)
                 .loanAmount(amount)
                 .numberOfInstallment(numberOfInstallment)
                 .interestRate(interestRate)
                 .build();
-
-        loan.validateLoan();
-        return loan;
     }
 
     public void addInstallments(LoanInstallment installment) {
@@ -61,7 +58,7 @@ public class Loan {
     }
 
     public Money getInstallmentAmount() {
-        return getTotalLoanAmount().divide(BigDecimal.valueOf(numberOfInstallment));
+        return getTotalLoanAmount().divide(BigDecimal.valueOf(numberOfInstallment.getNumberOfInstallment()));
     }
 
     public Money getTotalPaidAmount() {
@@ -74,13 +71,5 @@ public class Loan {
     public void checkAndUpdatePaidStatus() {
         isPaid = !installments.isEmpty() &&
                 installments.stream().allMatch(LoanInstallment::isPaid);
-    }
-
-    private void validateLoan() {
-        if (customerId == null)
-            throw new IllegalArgumentException("Customer ID is required.");
-
-        if (numberOfInstallment == null || !VALID_INSTALLMENTS.contains(numberOfInstallment))
-            throw new IllegalArgumentException("Number of installments must be one of: " + VALID_INSTALLMENTS);
     }
 }
