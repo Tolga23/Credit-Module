@@ -39,9 +39,6 @@ public class LoanApplicationService {
         loan = loanPort.save(loan);
         if (loan == null) throw new IllegalStateException("Loan couldn't be saved");
 
-        // maybe it can be Transient in LoanEntity?
-        loan.setInterestRate(request.interestRate());
-
         createAndSaveInstallments(loan);
 
         return loan;

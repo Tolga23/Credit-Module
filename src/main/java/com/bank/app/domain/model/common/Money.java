@@ -15,7 +15,7 @@ public class Money {
 
     public Money(BigDecimal value){
         if (value == null)
-            throw new IllegalArgumentException("Amount cannot be null Bacci");
+            throw new IllegalArgumentException("Amount cannot be null");
 
         if (value.compareTo(BigDecimal.ZERO) < 0)
             throw new IllegalArgumentException("Amount must be positive");
@@ -42,13 +42,12 @@ public class Money {
         return new Money(this.value.multiply(factor));
     }
 
-    public Money divide(BigDecimal divisor, int scale, RoundingMode roundingMode) {
-
+    public Money divide(BigDecimal divisor) {
         if (divisor.compareTo(BigDecimal.ZERO) == 0){
             throw new IllegalArgumentException("Divisor cannot be zero");
         }
 
-        return new Money(this.value.divide(divisor,scale,roundingMode));
+        return new Money(this.value.divide(divisor,2, RoundingMode.HALF_UP));
     }
 
     public boolean isGreaterThan(Money other) {
@@ -80,6 +79,6 @@ public class Money {
     }
 
     private static void requireNonNull(Money amount) {
-        Objects.requireNonNull(amount, "Amount cannot be null DDD");
+        Objects.requireNonNull(amount, "Amount cannot be null");
     }
 }

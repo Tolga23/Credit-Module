@@ -19,7 +19,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -85,7 +84,7 @@ public class LoanApplicationServiceTest {
                 .createdDate(LocalDateTime.now())
                 .build();
         Money totalLoanAmount = LOAN_AMOUNT.multiply(BigDecimal.ONE.add(INTEREST_RATE));
-        Money installmentAmount = totalLoanAmount.divide(BigDecimal.valueOf(INSTALLMENTS), 2, RoundingMode.HALF_UP);
+        Money installmentAmount = totalLoanAmount.divide(BigDecimal.valueOf(INSTALLMENTS));
         mockInstallments = Arrays.asList(
                 LoanInstallment.builder()
                         .id(1L)
