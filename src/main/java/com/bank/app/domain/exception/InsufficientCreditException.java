@@ -1,9 +1,9 @@
 package com.bank.app.domain.exception;
 
-import java.math.BigDecimal;
+import com.bank.app.domain.model.common.Money;
 
 public class InsufficientCreditException extends RuntimeException {
-    public InsufficientCreditException(BigDecimal required, BigDecimal available) {
-        super(String.format("Insufficient credit limit. Required: %s, Available: %s", required, available));
+    public InsufficientCreditException(Money required, Money available) {
+        super(String.format("Insufficient credit limit. Required: %s, Available: %s", required.getValue(), available.getValue()));
     }
 }

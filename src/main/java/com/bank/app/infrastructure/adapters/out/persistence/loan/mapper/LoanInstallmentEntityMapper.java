@@ -1,5 +1,6 @@
 package com.bank.app.infrastructure.adapters.out.persistence.loan.mapper;
 
+import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.loan.LoanInstallment;
 import com.bank.app.infrastructure.adapters.out.persistence.loan.entity.LoanInstallmentEntity;
 import org.springframework.stereotype.Component;
@@ -12,8 +13,8 @@ public class LoanInstallmentEntityMapper {
         return LoanInstallment.builder()
                 .id(entity.getId())
                 .loanId(entity.getLoan().getId())
-                .amount(entity.getAmount())
-                .paidAmount(entity.getPaidAmount())
+                .amount(new Money(entity.getAmount()))
+                .paidAmount(new Money(entity.getPaidAmount()))
                 .dueDate(entity.getDueDate())
                 .paymentDate(entity.getPaymentDate())
                 .isPaid(entity.isPaid())
@@ -25,8 +26,8 @@ public class LoanInstallmentEntityMapper {
 
         LoanInstallmentEntity entity = new LoanInstallmentEntity();
         entity.setId(domain.getId());
-        entity.setAmount(domain.getAmount());
-        entity.setPaidAmount(domain.getPaidAmount());
+        entity.setAmount(domain.getAmount().getValue());
+        entity.setPaidAmount(domain.getPaidAmount().getValue());
         entity.setDueDate(domain.getDueDate());
         entity.setPaymentDate(domain.getPaymentDate());
         entity.setPaid(domain.isPaid());

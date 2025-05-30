@@ -1,5 +1,6 @@
 package com.bank.app.infrastructure.config;
 
+import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.user.User;
 import com.bank.app.domain.model.user.UserRole;
@@ -39,8 +40,8 @@ public class DataLoader implements CommandLineRunner {
         Customer customer = Customer.builder()
                 .name("Test")
                 .surname("Customer")
-                .creditLimit(BigDecimal.valueOf(10000))
-                .usedCreditLimit(BigDecimal.ZERO)
+                .creditLimit(new Money(BigDecimal.valueOf(10000)))
+                .usedCreditLimit(Money.ZERO)
                 .build();
         Customer savedCustomer = customerDataAdapter.save(customer);
 
@@ -55,8 +56,8 @@ public class DataLoader implements CommandLineRunner {
         Customer customer2 = Customer.builder()
                 .name("Test2")
                 .surname("Customer2")
-                .creditLimit(BigDecimal.valueOf(10000))
-                .usedCreditLimit(BigDecimal.ZERO)
+                .creditLimit(new Money(BigDecimal.valueOf(10000)))
+                .usedCreditLimit(Money.ZERO)
                 .build();
         Customer savedCustomer2 = customerDataAdapter.save(customer2);
 

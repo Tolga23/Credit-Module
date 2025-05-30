@@ -1,5 +1,6 @@
 package com.bank.app.domain.model.loan;
 
+import com.bank.app.domain.model.common.Money;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +27,7 @@ public class Loan {
 
     private Long id;
     private Long customerId;
-    private BigDecimal loanAmount;
+    private Money loanAmount;
     private Integer numberOfInstallment;
     private BigDecimal interestRate;
     @Builder.Default
@@ -36,7 +37,7 @@ public class Loan {
     @Builder.Default
     private List<LoanInstallment> installments = new ArrayList<>();
 
-    public static Loan createNewLoan(Long customerId, BigDecimal amount, Integer numberOfInstallment, BigDecimal interestRate) {
+    public static Loan createNewLoan(Long customerId, Money amount, Integer numberOfInstallment, BigDecimal interestRate) {
         Loan loan = Loan.builder()
                 .customerId(customerId)
                 .loanAmount(amount)
@@ -57,23 +58,19 @@ public class Loan {
         return Collections.unmodifiableList(installments);
     }
 
-    public BigDecimal getTotalLoanAmount() {
+    public Money getTotalLoanAmount() {
         return loanAmount.multiply(BigDecimal.ONE.add(interestRate));
     }
 
-    public BigDecimal getInstallmentAmount() {
+    public Money getInstallmentAmount() {
         return getTotalLoanAmount().divide(BigDecimal.valueOf(numberOfInstallment),2,RoundingMode.HALF_UP);
     }
 
-    public BigDecimal getTotalPaidAmount() {
+    public Money getTotalPaidAmount() {
         return installments.stream()
                 .filter(LoanInstallment::isPaid)
                 .map(LoanInstallment::getPaidAmount)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    public BigDecimal getRemainingAmount() {
-        return getTotalLoanAmount().subtract(getTotalPaidAmount());
+                .reduce(Money.ZERO, Money::add);
     }
 
     public void checkAndUpdatePaidStatus() {
@@ -85,7 +82,7 @@ public class Loan {
         if (customerId == null)
             throw new IllegalArgumentException("Customer ID is required.");
 
-        if (loanAmount == null || loanAmount.compareTo(BigDecimal.ZERO) <= 0)
+        if (loanAmount == null || loanAmount.compareTo(Money.ZERO) <= 0)
             throw new IllegalArgumentException("Loan amount is required and should be greater than zero.");
 
         if (numberOfInstallment == null || !VALID_INSTALLMENTS.contains(numberOfInstallment))

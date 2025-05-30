@@ -59,10 +59,10 @@ public class LoanInstallmentDataAdapter implements LoanInstallmentPort {
                 .orElseThrow(() -> new IllegalStateException("Installment not found with ID: " + installment.getId()));
 
         // Update fields
-        existingEntity.setAmount(installment.getAmount());
+        existingEntity.setAmount(installment.getAmount().getValue());
         existingEntity.setPaid(installment.isPaid());
         existingEntity.setDueDate(installment.getDueDate());
-        existingEntity.setPaidAmount(installment.getPaidAmount());
+        existingEntity.setPaidAmount(installment.getPaidAmount().getValue());
         existingEntity.setLoan(loanEntity);
 
         // Set payment date only if fully paid
