@@ -30,8 +30,6 @@ public class LoanInstallment {
         if (loanId == null)
             throw new IllegalArgumentException("Load ID is required.");
 
-
-
         if (dueDate == null || dueDate.isBefore(LocalDate.now()))
             throw new IllegalArgumentException("DueDate cannot be in the past or null.");
     }
