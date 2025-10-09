@@ -26,7 +26,12 @@ public class LoanController {
     @PostMapping("/create")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and #request.customerId == authentication.principal.customerId)")
     public ResponseEntity<LoanResponse> createLoan(@Valid @RequestBody CreateLoanRequest request) {
-        CreateLoanCommand command = CreateLoanCommand.from(request);
+        CreateLoanCommand command = new CreateLoanCommand(
+                request.customerId(),
+                request.amount(),
+                request.numberOfInstallments(),
+                request.interestRate()
+        );
         return ResponseEntity.ok(LoanResponse.from(service.createLoan(command)));
     }
 
@@ -34,16 +39,24 @@ public class LoanController {
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and #request.customerId == authentication.principal.customerId)")
     public ResponseEntity<List<LoanResponse>> getCustomerLoans(
             @Valid @RequestBody LoanSearchRequest request) {
-        LoanSearchCommand searchCommand = LoanSearchCommand.from(request);
+        LoanSearchCommand searchCommand = new LoanSearchCommand(
+                request.customerId(),
+                request.numberOfInstallments(),
+                request.isPaid()
+        );
         return ResponseEntity.ok(LoanResponse.from(service.getCustomerLoans(searchCommand)));
     }
 
     @PostMapping("/pay")
     @PreAuthorize("hasRole('ADMIN') or (hasRole('CUSTOMER') and #request.customerId == authentication.principal.customerId)")
     public ResponseEntity<PayLoanResponse> payLoan(@Valid @RequestBody PayLoanRequest request) {
-        PayLoanCommand payLoanCommand = PayLoanCommand.from(request);
+        PayLoanCommand payLoanCommand = new PayLoanCommand(
+                request.customerId(),
+                request.loanId(),
+                request.amount()
+        );
         return ResponseEntity.ok(
-                service.payLoan(payLoanCommand)
+                PayLoanResponse.from(service.payLoan(payLoanCommand))
         );
     }
 }

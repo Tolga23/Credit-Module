@@ -1,32 +1,26 @@
 package com.bank.app.domain.service;
 
-import com.bank.app.application.command.PayLoanCommand;
-import com.bank.app.application.command.PaymentResult;
+import com.bank.app.domain.model.loan.PaymentResult;
 import com.bank.app.domain.exception.UnauthorizedCustomerException;
 import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
 import com.bank.app.domain.port.LoanPaymentPort;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 
-@Service
-@RequiredArgsConstructor
 public class LoanPaymentService implements LoanPaymentPort {
 
     @Override
-    public PaymentResult processPayment(Loan loan, PayLoanCommand request) {
+    public PaymentResult processPayment(Loan loan, Long customerId, Money paymentAmount) {
         validateLoanForPayment(loan);
-        validateOwnership(loan, request.customerId());
+        validateOwnership(loan, customerId);
 
         LocalDate paymentDate = LocalDate.now();
         List<LoanInstallment> eligibleInstallments = getEligibleInstallments(loan, paymentDate);
-        Money paymentAmount = new Money(request.amount());
-        validatePaymentAmount(eligibleInstallments.get(0),paymentAmount );
+        validatePaymentAmount(eligibleInstallments.get(0), paymentAmount);
         return processInstallmentPayments(eligibleInstallments, paymentAmount, paymentDate, loan);
     }
 
@@ -54,16 +48,14 @@ public class LoanPaymentService implements LoanPaymentPort {
         }
 
         loan.checkAndUpdatePaidStatus();
-        return new PaymentResult(totalPaid, originalAmount, installmentsPaid);
+        return new PaymentResult(totalPaid, originalAmount, installmentsPaid, loan.isPaid());
     }
 
     public void validateOwnership(Loan loan, Long customerId) {
-        // Check ownership of loan
         if (!loan.getCustomerId().equals(customerId)) {
             throw new UnauthorizedCustomerException("You do not have permission to access this loan");
         }
 
-        // Check if loan is already paid
         if (loan.isPaid()) {
             throw new IllegalStateException("Loan is already paid.");
         }
@@ -100,3 +92,7 @@ public class LoanPaymentService implements LoanPaymentPort {
         }
     }
 }
+
+
+
+
