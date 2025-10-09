@@ -3,13 +3,18 @@ package com.bank.app.application.service;
 import com.bank.app.application.command.CreateLoanCommand;
 import com.bank.app.application.command.LoanSearchCommand;
 import com.bank.app.application.command.PayLoanCommand;
-import com.bank.app.application.command.PaymentResult;
+import com.bank.app.domain.model.loan.PaymentResult;
+import com.bank.app.domain.model.common.InstallmentCount;
+import com.bank.app.domain.model.common.InterestRate;
 import com.bank.app.domain.model.common.Money;
 import com.bank.app.domain.model.customer.Customer;
 import com.bank.app.domain.model.loan.Loan;
 import com.bank.app.domain.model.loan.LoanInstallment;
-import com.bank.app.domain.port.*;
-import com.bank.app.infrastructure.adapters.in.rest.dto.response.PayLoanResponse;
+import com.bank.app.domain.port.CustomerPort;
+import com.bank.app.domain.port.LoanCreatePort;
+import com.bank.app.domain.port.LoanInstallmentPort;
+import com.bank.app.domain.port.LoanPaymentPort;
+import com.bank.app.domain.port.LoanPort;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +60,7 @@ public class LoanApplicationServiceTest {
     private static final Long CUSTOMER_ID = 1L;
     private static final Money LOAN_AMOUNT = new Money(BigDecimal.valueOf(1000));
     private static final int INSTALLMENTS = 12;
-    private static final BigDecimal INTEREST_RATE = BigDecimal.valueOf(0.1);
+    private static final BigDecimal INTEREST_RATE_VALUE = BigDecimal.valueOf(0.12);
 
     private Customer mockCustomer;
     private Loan mockLoan;
@@ -65,7 +70,7 @@ public class LoanApplicationServiceTest {
     @BeforeEach
     void setUp() {
         payLoanCommand = new PayLoanCommand(1L, 1L, BigDecimal.valueOf(100));
-        // Set up reusable mock values
+
         mockCustomer = Customer.builder()
                 .id(CUSTOMER_ID)
                 .name("Test")
@@ -74,22 +79,27 @@ public class LoanApplicationServiceTest {
                 .usedCreditLimit(new Money(BigDecimal.valueOf(1000)))
                 .build();
 
+        InstallmentCount installmentCount = new InstallmentCount(INSTALLMENTS);
+        InterestRate interestRate = new InterestRate(INTEREST_RATE_VALUE);
+
         mockLoan = Loan.builder()
                 .id(1L)
                 .customerId(CUSTOMER_ID)
                 .loanAmount(LOAN_AMOUNT)
-                .numberOfInstallment(INSTALLMENTS)
-                .interestRate(INTEREST_RATE)
+                .numberOfInstallment(installmentCount)
+                .interestRate(interestRate)
                 .isPaid(false)
                 .createdDate(LocalDateTime.now())
                 .build();
-        Money totalLoanAmount = LOAN_AMOUNT.multiply(BigDecimal.ONE.add(INTEREST_RATE));
-        Money installmentAmount = totalLoanAmount.divide(BigDecimal.valueOf(INSTALLMENTS));
+
+        Money totalLoanAmount = LOAN_AMOUNT.multiply(BigDecimal.ONE.add(interestRate.getInterestRate()));
+        Money installmentAmount = totalLoanAmount.divide(BigDecimal.valueOf(installmentCount.getNumberOfInstallment()));
         mockInstallments = Arrays.asList(
                 LoanInstallment.builder()
                         .id(1L)
                         .loanId(1L)
                         .amount(installmentAmount)
+                        .paidAmount(Money.ZERO)
                         .dueDate(LocalDate.now().plusMonths(1))
                         .isPaid(false)
                         .build(),
@@ -97,6 +107,7 @@ public class LoanApplicationServiceTest {
                         .id(2L)
                         .loanId(1L)
                         .amount(installmentAmount)
+                        .paidAmount(Money.ZERO)
                         .dueDate(LocalDate.now().plusMonths(2))
                         .isPaid(false)
                         .build()
@@ -104,46 +115,41 @@ public class LoanApplicationServiceTest {
     }
 
     private CreateLoanCommand createLoanCommand() {
-        return new CreateLoanCommand(CUSTOMER_ID, LOAN_AMOUNT.getValue(), INSTALLMENTS, INTEREST_RATE);
+        return new CreateLoanCommand(CUSTOMER_ID, LOAN_AMOUNT.getValue(), INSTALLMENTS, INTEREST_RATE_VALUE);
     }
 
     @Test
     public void testCreateLoan_Success() {
         CreateLoanCommand command = createLoanCommand();
 
-        // Arrange
         when(customerPort.findById(CUSTOMER_ID)).thenReturn(Optional.of(mockCustomer));
-        when(loanCreatePort.createLoan(mockCustomer, command)).thenReturn(mockLoan);
+        when(loanCreatePort.createLoan(eq(mockCustomer), any(Money.class), any(InstallmentCount.class), any(InterestRate.class)))
+                .thenReturn(mockLoan);
         when(loanPort.save(mockLoan)).thenReturn(mockLoan);
         when(loanCreatePort.createInstallment(mockLoan)).thenReturn(mockInstallments);
         when(loanInstallmentPort.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
 
-        // Act
         Loan result = loanApplicationService.createLoan(command);
 
-        // Assert
         Assertions.assertNotNull(result);
         Assertions.assertEquals(LOAN_AMOUNT, result.getLoanAmount());
-        Assertions.assertEquals(INSTALLMENTS, result.getNumberOfInstallment());
+        Assertions.assertEquals(INSTALLMENTS, result.getNumberOfInstallment().getNumberOfInstallment());
 
-        // Verify interactions
         verify(customerPort).findById(CUSTOMER_ID);
-        verify(loanCreatePort).createLoan(mockCustomer, command);
+        verify(loanCreatePort).createLoan(eq(mockCustomer), any(Money.class), any(InstallmentCount.class), any(InterestRate.class));
         verify(customerPort).update(mockCustomer);
         verify(loanPort).save(mockLoan);
+        verify(loanInstallmentPort, times(mockInstallments.size())).save(any());
     }
 
     @Test
     public void testCreateLoan_CustomerNotFound() {
         CreateLoanCommand command = createLoanCommand();
 
-        // Arrange
         when(customerPort.findById(CUSTOMER_ID)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> loanApplicationService.createLoan(command));
 
-        // Verify
         verify(customerPort).findById(CUSTOMER_ID);
         verifyNoInteractions(loanPort, loanCreatePort);
     }
@@ -151,24 +157,21 @@ public class LoanApplicationServiceTest {
     @Test
     public void testPayLoan_Success() {
         PayLoanCommand command = new PayLoanCommand(CUSTOMER_ID, 1L, BigDecimal.valueOf(500));
-        PaymentResult paymentResult = new PaymentResult(new Money(BigDecimal.valueOf(500)), new Money(BigDecimal.valueOf(500)), 1);
+        PaymentResult paymentResult = new PaymentResult(new Money(BigDecimal.valueOf(500)), new Money(BigDecimal.valueOf(500)), 1, true);
 
-        // Arrange
         when(loanPort.findById(1L)).thenReturn(Optional.of(mockLoan));
         when(customerPort.findById(CUSTOMER_ID)).thenReturn(Optional.of(mockCustomer));
-        when(loanPaymentPort.processPayment(mockLoan, command)).thenReturn(paymentResult);
+        when(loanPaymentPort.processPayment(eq(mockLoan), eq(CUSTOMER_ID), any(Money.class))).thenReturn(paymentResult);
 
-        // Act
-        PayLoanResponse response = loanApplicationService.payLoan(command);
+        PaymentResult result = loanApplicationService.payLoan(command);
 
-        // Assert
-        Assertions.assertNotNull(response);
-        Assertions.assertEquals(paymentResult.totalPaid(), response.totalPaid());
-        Assertions.assertEquals(paymentResult.installmentsPaid(), response.installmentsPaid());
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(paymentResult.totalPaid(), result.totalPaid());
+        Assertions.assertEquals(paymentResult.installmentsPaid(), result.installmentsPaid());
+        Assertions.assertEquals(paymentResult.loanFullyPaid(), result.loanFullyPaid());
 
-        // Verify
         verify(loanPort).findById(1L);
-        verify(loanPaymentPort).processPayment(mockLoan, command);
+        verify(loanPaymentPort).processPayment(eq(mockLoan), eq(CUSTOMER_ID), any(Money.class));
         verify(customerPort).update(mockCustomer);
         verify(loanPort).pay(mockLoan);
     }
@@ -177,13 +180,10 @@ public class LoanApplicationServiceTest {
     public void testPayLoan_LoanNotFound() {
         PayLoanCommand command = new PayLoanCommand(CUSTOMER_ID, 1L, BigDecimal.valueOf(500));
 
-        // Arrange
         when(loanPort.findById(1L)).thenReturn(Optional.empty());
 
-        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> loanApplicationService.payLoan(command));
 
-        // Verify
         verify(loanPort).findById(1L);
         verifyNoInteractions(loanPaymentPort, customerPort);
     }
@@ -193,19 +193,15 @@ public class LoanApplicationServiceTest {
         LoanSearchCommand command = new LoanSearchCommand(CUSTOMER_ID, null, null);
         List<Loan> loans = Arrays.asList(mockLoan);
 
-        // Arrange
         when(customerPort.findById(CUSTOMER_ID)).thenReturn(Optional.of(mockCustomer));
         when(loanPort.findByCustomerIdAndFilters(CUSTOMER_ID, null, null)).thenReturn(loans);
 
-        // Act
         List<Loan> result = loanApplicationService.getCustomerLoans(command);
 
-        // Assert
         Assertions.assertNotNull(result);
         Assertions.assertEquals(1, result.size());
         Assertions.assertEquals(mockLoan, result.get(0));
 
-        // Verify
         verify(customerPort).findById(CUSTOMER_ID);
         verify(loanPort).findByCustomerIdAndFilters(CUSTOMER_ID, null, null);
     }
@@ -213,7 +209,8 @@ public class LoanApplicationServiceTest {
     @Test
     void testCreateLoan_InstallmentSaveFailed() {
         when(customerPort.findById(anyLong())).thenReturn(Optional.of(mockCustomer));
-        when(loanCreatePort.createLoan(any(), any())).thenReturn(mockLoan);
+        when(loanCreatePort.createLoan(eq(mockCustomer), any(Money.class), any(InstallmentCount.class), any(InterestRate.class)))
+                .thenReturn(mockLoan);
         when(loanPort.save(any())).thenReturn(mockLoan);
         when(loanCreatePort.createInstallment(any())).thenReturn(mockInstallments);
         when(loanInstallmentPort.save(any())).thenReturn(null);
@@ -224,20 +221,18 @@ public class LoanApplicationServiceTest {
         verify(loanInstallmentPort).save(any());
     }
 
-    // Additional test for payLoan - validation failure
     @Test
     void testPayLoan_ValidationFailed() {
         when(loanPort.findById(anyLong())).thenReturn(Optional.of(mockLoan));
-        when(loanPaymentPort.processPayment(any(), any()))
+        when(loanPaymentPort.processPayment(any(), anyLong(), any()))
                 .thenThrow(new IllegalArgumentException("Invalid ownership"));
 
         assertThrows(IllegalArgumentException.class,
                 () -> loanApplicationService.payLoan(payLoanCommand));
 
-        verify(loanPaymentPort, times(1)).processPayment(any(), any());
+        verify(loanPaymentPort, times(1)).processPayment(any(), anyLong(), any());
     }
 
-    // Additional test for getCustomerLoans - empty result
     @Test
     void testGetCustomerLoans_EmptyResult() {
         LoanSearchCommand searchCommand = new LoanSearchCommand(1L, 12, true);
@@ -256,3 +251,8 @@ public class LoanApplicationServiceTest {
         );
     }
 }
+
+
+
+
+
